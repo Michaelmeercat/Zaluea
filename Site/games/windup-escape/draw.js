@@ -23,7 +23,15 @@
     winder: '#74c0fc', winderDark: '#1971c2', winderLight: '#d0ebff',
     toy: '#ff4d5a', toyDark: '#c92a3a', toyLight: '#ff9aa2', belly: '#fff4dc', band: '#ffcc33',
     marbles: [['#ff6b9d', '#a61e4d'], ['#748ffc', '#364fc7'], ['#38d9a9', '#087f5b'], ['#ffa94d', '#d9480f']],
-    ink: '#3b2a4a'
+    ink: '#3b2a4a',
+    // Toy paint jobs, unlocked with stars.
+    skins: [
+      { name: 'Cherry', stars: 0, body: '#ff4d5a', dark: '#c92a3a', light: '#ff9aa2', line: '#8f1d2a', band: '#ffcc33', bolt: '#e09a00' },
+      { name: 'Sky', stars: 15, body: '#4dabf7', dark: '#1c7ed6', light: '#a5d8ff', line: '#174a8a', band: '#ffcc33', bolt: '#e09a00' },
+      { name: 'Frog', stars: 30, body: '#51cf66', dark: '#2b8a3e', light: '#b2f2bb', line: '#1d5e2b', band: '#ff922b', bolt: '#d9480f' },
+      { name: 'Grape', stars: 45, body: '#9775fa', dark: '#6741d9', light: '#d0bfff', line: '#3f2a8c', band: '#ffcc33', bolt: '#e09a00' },
+      { name: 'Gold', stars: 60, body: '#ffd43b', dark: '#f08c00', light: '#fff9db', line: '#a15c00', band: '#ff5a67', bolt: '#c92a3a' }
+    ]
   };
 
   function rr(ctx, x, y, w, h, r) {
@@ -480,6 +488,7 @@
   //      alpha, tilt, squash, blink (0..1), dizzy, sleepy, shadow }
   function toy(ctx, cx, cy, T, o) {
     var r = T * 0.32;
+    var sk = o.skin || C.skins[0];
     var hx = Math.sin(o.ang), hy = -Math.cos(o.ang);
     var sc = o.scale == null ? 1 : o.scale;
     var sq = o.squash || 0;
@@ -524,11 +533,11 @@
 
     // body
     var g = ctx.createLinearGradient(0, -r, 0, r);
-    g.addColorStop(0, C.toyLight);
-    g.addColorStop(0.35, C.toy);
-    g.addColorStop(1, C.toyDark);
+    g.addColorStop(0, sk.light);
+    g.addColorStop(0.35, sk.body);
+    g.addColorStop(1, sk.dark);
     ctx.fillStyle = g;
-    ctx.strokeStyle = '#8f1d2a';
+    ctx.strokeStyle = sk.line;
     ctx.lineWidth = T * 0.03;
     ellipse(ctx, 0, 0, r, r * 1.02);
     ctx.fill();
@@ -537,16 +546,16 @@
     ctx.save();
     ellipse(ctx, 0, 0, r, r * 1.02);
     ctx.clip();
-    ctx.fillStyle = C.band;
+    ctx.fillStyle = sk.band;
     ctx.fillRect(-r, r * 0.3, r * 2, r * 0.22);
-    ctx.fillStyle = '#e09a00';
+    ctx.fillStyle = sk.bolt;
     for (var i = -2; i <= 2; i++) {
       ellipse(ctx, i * r * 0.36 + hx * r * 0.15, r * 0.41, r * 0.05, r * 0.05);
       ctx.fill();
     }
     ctx.restore();
     // top bolt
-    ctx.fillStyle = C.band;
+    ctx.fillStyle = sk.band;
     ctx.strokeStyle = '#c98a00';
     ellipse(ctx, 0, -r * 0.98, r * 0.2, r * 0.12);
     ctx.fill(); ctx.stroke();

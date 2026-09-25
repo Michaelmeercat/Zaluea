@@ -30,7 +30,7 @@
       best: Array.isArray(d.best) ? d.best : [],
       sound: d.sound !== false,
       music: d.music !== false,
-      seen: (d.seen && typeof d.seen === 'object') ? d.seen : {}
+      skin: typeof d.skin === 'number' ? d.skin : 0
     };
   }
   function writeSave() {
@@ -38,6 +38,12 @@
   }
   function isUnlocked(i) { return i === 0 || (save.stars[i - 1] || 0) > 0; }
   function totalStars() { var t = 0; for (var i = 0; i < LEVELS.length; i++) t += save.stars[i] || 0; return t; }
+  function skinUnlocked(i) { return totalStars() >= C.skins[i].stars; }
+  function currentSkin() {
+    var i = save.skin;
+    if (!(i >= 0 && i < C.skins.length) || !skinUnlocked(i)) i = 0;
+    return C.skins[i];
+  }
   function firstOpenLevel() {
     for (var i = 0; i < LEVELS.length; i++) if (!(save.stars[i] > 0)) return i;
     return LEVELS.length - 1;
@@ -89,9 +95,9 @@
     time: 0, windT: 0, endT: 0, cause: null,
     fails: 0, taps: 0, springMax: 1,
     demo: null, lastTeleport: false, resultShown: false,
-    bonked: false, tapPrompted: -1
+    bonked: false
   };
-  var vis = { ang: 0, walk: 0, keySpin: 0, corrX: 0, corrY: 0, blink: 0, blinkT: 2, shake: 0, wobble: 0 };
+  var vis = { ang: 0, walk: 0, keySpin: 0, corrX: 0, corrY: 0, blink: 0, blinkT: 2, shake: 0 };
   var view = { w: 1, h: 1, dpr: 1, T: 40, ox: 0, oy: 0, d: 10, strips: [] };
   var parts = [];
   var crumbleAnim = {};
@@ -219,11 +225,9 @@
     G.resultShown = false;
     G.bonked = false;
     G.springMax = L.spring;
-    G.tapPrompted = -1;
     vis.ang = L.startDir * Math.PI / 2;
     vis.corrX = vis.corrY = 0;
     vis.shake = 0;
-    vis.wobble = 0;
     parts = [];
     crumbleAnim = {};
     tubePulse = {};
@@ -458,7 +462,12 @@
       }
     }
     if (ev.death && G.p >= ev.deathP) { G.p = ev.deathP; G.s = G.cur.res.state; die(ev.death); return; }
-    if (G.p >= 1) { G.p -= 1; commitBeat(); if (G.phase !== 'run') G.p = G.phase === 'won' ? 1 : G.p; }
+    if (G.p >= 1) {
+      G.p -= 1;
+      commitBeat();
+      // Won or wound down on arrival: hold the pose at the tile just reached.
+      if (G.phase !== 'run') G.p = 1;
+    }
   }
 
   // --------------------------------------------------------------- input
@@ -522,7 +531,6 @@
     sfx('bonk');
     buzz(18);
     vis.shake = Math.max(vis.shake, 0.12);
-    vis.wobble = 1;
     var f = tileXY(ev.from);
     var bx = f.x + 0.5 + Sim.DX[ev.dir] * 0.5, by = f.y + 0.5 + Sim.DY[ev.dir] * 0.5;
     for (var i = 0; i < 6; i++) {
@@ -635,7 +643,9 @@
     if (won) {
       var n = stars.filter(Boolean).length;
       var prevStars = save.stars[G.li] || 0;
+      var before = totalStars();
       save.stars[G.li] = Math.max(prevStars, n);
+      var unlocked = C.skins.filter(function (sk) { return sk.stars > before && sk.stars <= totalStars(); });
       if (!(save.best[G.li] <= time)) save.best[G.li] = time;
       writeSave();
       G.fails = 0;
@@ -656,6 +666,10 @@
       ui.next.classList.remove('hidden');
       ui.spaceAction.textContent = last ? 'rooms' : 'next room';
       show(ui.rHint);
+      if (unlocked.length) {
+        var sk = unlocked[unlocked.length - 1];
+        ui.resultSub.textContent = 'New paint unlocked: ' + sk.name + '! Pick it in the room list.';
+      }
     } else {
       G.fails++;
       var f = FAILS[G.cause] || FAILS.spring;
@@ -732,7 +746,6 @@
     var k = Math.pow(0.0005, dt);
     vis.corrX *= k; vis.corrY *= k;
     vis.shake *= Math.pow(0.02, dt);
-    vis.wobble *= Math.pow(0.01, dt);
     vis.blinkT -= dt;
     if (vis.blinkT < 0) { vis.blink = 1; vis.blinkT = 2 + Math.random() * 3; }
     vis.blink = Math.max(0, vis.blink - dt * 7);
@@ -969,8 +982,8 @@
   function toyState() {
     var s = G.s, L = G.L;
     var pos = toyNow();
-    var o = { x: pos.x, y: pos.y, ang: vis.ang, walk: vis.walk, keySpin: vis.keySpin, blink: vis.blink, scale: 1, alpha: 1, squash: 0, tilt: 0 };
-    var ph = G.phase;
+    var o = { x: pos.x, y: pos.y, ang: vis.ang, walk: vis.walk, keySpin: vis.keySpin, blink: vis.blink, scale: 1, alpha: 1, squash: 0, tilt: 0, skin: currentSkin() };
+    var ph = G.phase === 'paused' ? G.prevPhase : G.phase;
     if (ph === 'intro' || ph === 'ready') {
       o.squash = Math.sin(G.time * 3) * 0.03;
     } else if (ph === 'winding') {
@@ -1153,6 +1166,42 @@
       ui.grid.appendChild(b);
     });
     ui.total.textContent = totalStars() + '/' + LEVELS.length * 3;
+    buildSkins();
+  }
+
+  function buildSkins() {
+    var box = $('skins');
+    box.innerHTML = '';
+    var cur = currentSkin();
+    C.skins.forEach(function (sk, i) {
+      var b = document.createElement('button');
+      var open = skinUnlocked(i);
+      b.className = 'skin' + (sk === cur ? ' on' : '') + (open ? '' : ' locked');
+      b.setAttribute('aria-label', sk.name + (open ? '' : ' (needs ' + sk.stars + ' stars)'));
+      var c = document.createElement('canvas');
+      var dpr = Math.min(2, window.devicePixelRatio || 1);
+      c.width = 46 * dpr; c.height = 46 * dpr;
+      var cx2 = c.getContext('2d');
+      cx2.setTransform(dpr, 0, 0, dpr, 0, 0);
+      Draw.toy(cx2, 23, 26, 40, { ang: Math.PI, walk: 0, keySpin: 0.6 + i, skin: sk, shadow: false });
+      b.appendChild(c);
+      if (!open) {
+        var need = document.createElement('span');
+        need.className = 'need';
+        need.textContent = '\u2605' + sk.stars;
+        b.appendChild(need);
+      }
+      b.addEventListener('click', function (e) {
+        e.stopPropagation();
+        Sound.unlock();
+        if (!open) { Sound.sfx.locked(); flashToast('Collect ' + sk.stars + ' stars to unlock ' + sk.name + '!'); return; }
+        save.skin = i;
+        writeSave();
+        Sound.sfx.windup();
+        buildSkins();
+      });
+      box.appendChild(b);
+    });
   }
 
   function drawIntroIcon(kind) {
@@ -1166,7 +1215,7 @@
     var t = 0.3;
     switch (kind) {
       case 'turn': case 'left':
-        Draw.toy(cx2, x + T / 2, y + T / 2, T, { ang: Math.PI / 2, walk: 0, keySpin: 0.5 });
+        Draw.toy(cx2, x + T / 2, y + T / 2, T, { ang: Math.PI / 2, walk: 0, keySpin: 0.5, skin: currentSkin() });
         Draw.turnMark(cx2, x + T / 2, y + T / 2, T * 1.1, 1);
         break;
       case 'bonk': Draw.block(cx2, x, y + 4, T, C.blocks[1], T * 0.22, 'B'); break;
@@ -1197,7 +1246,7 @@
     var hop = Math.sin(titleHop * Math.PI) * size * 0.18;
     Draw.toy(cx2, size / 2, size * 0.58 - hop, T, {
       ang: Math.PI + Math.sin(titleT * 0.9) * 0.6, walk: titleT * 9, keySpin: titleT * 6 + titleHop * 20,
-      blink: (titleT % 3.2) < 0.12 ? 1 : 0, squash: Math.sin(titleT * 9) * 0.02
+      blink: (titleT % 3.2) < 0.12 ? 1 : 0, squash: Math.sin(titleT * 9) * 0.02, skin: currentSkin()
     });
   }
 
