@@ -10,7 +10,10 @@
   class Renderer {
     constructor(canvas) {
       this.cv = canvas;
-      this.ctx = canvas.getContext('2d', { alpha: false });
+      this.ctx = canvas.getContext('2d');
+      // Static map art lives on its own canvas layer underneath, so it is not re-drawn every frame.
+      this.bgCv = document.getElementById('cv-bg');
+      this.bgCtx = this.bgCv.getContext('2d', { alpha: false });
       this.k = 1;
       this.bg = null; this.overlay = null; this.amb = {};
       this.match = null;
@@ -30,6 +33,8 @@
       this.cv.style.height = h + 'px';
       this.cv.width = Math.floor(w * dpr);
       this.cv.height = Math.floor(h * dpr);
+      this.bgCv.style.width = w + 'px'; this.bgCv.style.height = h + 'px';
+      this.bgCv.width = this.cv.width; this.bgCv.height = this.cv.height;
       this.cssScale = s;
       this.k = this.cv.width / CS.WORLD_W;
       Spr.setScale(this.k);
@@ -38,6 +43,7 @@
 
     setMatch(m) {
       this.match = m;
+      this.trailTypes = new Set(CS.Save ? CS.TOWER_ORDER.filter((t) => CS.Save.masteryBonus(t).trail) : []);
       this.paintBackground();
       // path chevrons
       this.chev = [];
@@ -46,12 +52,11 @@
 
     paintBackground() {
       const m = this.match;
-      const c = Spr.mk(this.cv.width, this.cv.height);
-      const x = c.getContext('2d');
-      x.scale(this.k, this.k);
+      const x = this.bgCtx;
+      x.setTransform(this.k, 0, 0, this.k, 0, 0);
       x.lineJoin = 'round'; x.lineCap = 'round';
       this.amb = CS.MapArt.paint(x, m.def, m.map) || {};
-      this.bg = c;
+      this.bg = this.bgCv;
       const o = Spr.mk(this.cv.width, this.cv.height);
       const ox = o.getContext('2d');
       ox.scale(this.k, this.k);
@@ -89,12 +94,14 @@
       const x = this.ctx;
       const Q = this.Q;
       let sx = 0, sy = 0;
-      if (m.fx.shakeAmt > 0) {
-        sx = (Math.random() - 0.5) * m.fx.shakeAmt * 2; sy = (Math.random() - 0.5) * m.fx.shakeAmt * 2;
-        x.setTransform(1, 0, 0, 1, 0, 0); x.fillStyle = '#05070a'; x.fillRect(0, 0, this.cv.width, this.cv.height);
+      if (m.fx.shakeAmt > 0) { sx = (Math.random() - 0.5) * m.fx.shakeAmt * 2; sy = (Math.random() - 0.5) * m.fx.shakeAmt * 2; }
+      if (sx || sy || this.bgShaken) {
+        this.bgCv.style.transform = sx || sy ? 'translate(' + (sx * this.cssScale).toFixed(1) + 'px,' + (sy * this.cssScale).toFixed(1) + 'px)' : '';
+        this.bgShaken = !!(sx || sy);
       }
+      x.setTransform(1, 0, 0, 1, 0, 0);
+      x.clearRect(0, 0, this.cv.width, this.cv.height);
       x.setTransform(this.k, 0, 0, this.k, sx * this.k, sy * this.k);
-      x.drawImage(this.bg, 0, 0, CS.WORLD_W, CS.WORLD_H);
       x.lineJoin = 'round'; x.lineCap = 'round';
 
       this.drawAmbient(x, t, Q);
@@ -108,7 +115,7 @@
       this.drawEnemies(x, t, ui);
       if (this.overlay) { x.save(); x.setTransform(1, 0, 0, 1, sx * this.k, sy * this.k); x.globalAlpha = 0.72; x.drawImage(this.overlay, 0, 0); x.restore(); }
       this.drawTowerHeads(x, t, ui);
-      this.drawProjectiles(x, Q);
+      this.drawProjectiles(x, Q, t);
       this.drawFx(x, Q);
       this.drawDarkness(x, t);
       this.drawOverlays(x, t, ui);
@@ -548,16 +555,18 @@
       if (e.shieldMax && e.shield > 0) { x.fillStyle = '#8ac4ff'; x.fillRect(px - w / 2, py - e.r - 16, w * (e.shield / e.shieldMax), 2); }
     }
 
-    drawProjectiles(x, Q) {
+    drawProjectiles(x, Q, time) {
       const m = this.match;
       const items = m.projs.items;
       const glow = Q.glow;
+      const prism = this.trailTypes;
       for (let i = 0; i < items.length; i++) {
         const p = items[i];
         if (!p.active || p.delay > 0) continue;
         if (p.kind === 'bullet') {
-          const tl = 0.018;
-          x.strokeStyle = p.color; x.lineWidth = p.size * 1.2;
+          const pr = prism.size && p.t && prism.has(p.t.type);
+          const tl = pr ? 0.04 : 0.018;
+          x.strokeStyle = pr ? 'hsl(' + ((time * 240 + p.x * 0.5) % 360) + ',100%,65%)' : p.color; x.lineWidth = p.size * 1.2;
           x.globalAlpha = 0.5;
           x.beginPath(); x.moveTo(p.x - p.vx * tl, p.y - p.vy * tl); x.lineTo(p.x, p.y); x.stroke();
           x.globalAlpha = 1;
@@ -675,6 +684,12 @@
       if (m.overloadT > 0) edge('#ff4d4d', 0.22 + 0.1 * Math.sin(t * 10));
       if (m.surgeT > 0) edge('#ffd84d', 0.15);
       if (m.coreHp / m.coreMax < 0.25 && m.state === 'play') edge('#ff0033', 0.12 + 0.08 * Math.sin(t * 5));
+      if (m.paused && m.state === 'play') {
+        x.fillStyle = 'rgba(4,8,14,0.45)'; x.fillRect(0, 0, CS.WORLD_W, CS.WORLD_H);
+        x.font = '900 46px Orbitron, Rajdhani, sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle';
+        x.fillStyle = 'rgba(255,255,255,0.85)'; x.fillText('PAUSED', CS.WORLD_W / 2, CS.WORLD_H / 2);
+        x.font = '600 18px Rajdhani, sans-serif'; x.fillStyle = 'rgba(200,220,240,0.7)'; x.fillText('Press P or ▶ to resume — you can still build and upgrade', CS.WORLD_W / 2, CS.WORLD_H / 2 + 40);
+      }
     }
 
     drawPlacement(x, t, ui) {

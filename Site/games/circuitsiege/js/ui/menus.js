@@ -77,7 +77,7 @@
         </div>
         <div class="menu-side">
           <div class="panel"><div class="profile-card">
-            <div class="pc-icon">${(P.ICONS[d.icon] || P.ICONS.chip).glyph}</div>
+            <div class="pc-icon">${S.iconHTML(d.icon)}</div>
             <div class="pc-main"><div class="pc-name">Operator · Level ${d.level}</div><div class="pc-title">${esc(d.title)}</div>
               <div class="xpbar"><div style="width:${((d.xp / need) * 100).toFixed(1)}%"></div></div>
               <div class="xptext"><span>${U.fmt(d.xp)} / ${U.fmt(need)} XP</span><span class="dc">${U.fmt(d.chips)}</span></div></div>
@@ -400,7 +400,8 @@
         const st = d.stats;
         let fav = '—', favN = 0;
         for (const k in st.towerUse) if (st.towerUse[k] > favN) { favN = st.towerUse[k]; fav = CS.TOWERS[k] ? CS.TOWERS[k].name : k; }
-        const icons = Object.values(P.ICONS).map((ic) => { const ok = S.iconUnlocked(ic.id); return `<div class="icon-opt ${d.icon === ic.id ? 'sel' : ''} ${ok ? '' : 'locked'}" data-icon="${ic.id}" title="${ok ? ic.name : ic.level ? 'Level ' + ic.level : 'Achievement: ' + P.ACH_BY_ID[ic.ach].name}">${ic.glyph}</div>`; }).join('');
+        const icons = Object.values(P.ICONS).map((ic) => { const ok = S.iconUnlocked(ic.id); return `<div class="icon-opt ${d.icon === ic.id ? 'sel' : ''} ${ok ? '' : 'locked'}" data-icon="${ic.id}" title="${ok ? ic.name : ic.level ? 'Level ' + ic.level : 'Achievement: ' + P.ACH_BY_ID[ic.ach].name}">${ic.glyph}</div>`; }).join('')
+          + CS.TOWER_ORDER.map((t) => { const id = 'tw:' + t; const ok = S.iconUnlocked(id); return `<div class="icon-opt ${d.icon === id ? 'sel' : ''} ${ok ? '' : 'locked'}" data-icon="${id}" title="${CS.TOWERS[t].name}${ok ? '' : ' — Mastery 6'}"><img src="${CS.Spr.towerIcon(t, [5, 0, 2], S.skinOf(t), 64)}" style="width:38px;height:38px" alt=""></div>`; }).join('');
         const titles = S.titles().map((t) => `<option ${t === d.title ? 'selected' : ''}>${esc(t)}</option>`).join('');
         const cores = Object.values(P.CORE_SKINS).map((c) => { const ok = d.level >= c.level; return `<div class="icon-opt ${d.coreSkin === c.id ? 'sel' : ''} ${ok ? '' : 'locked'}" data-core="${c.id}" title="${ok ? c.name : 'Level ' + c.level}" style="color:${c.c1}">⬢</div>`; }).join('');
         const rows = [

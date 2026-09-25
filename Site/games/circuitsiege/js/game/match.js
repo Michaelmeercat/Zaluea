@@ -262,8 +262,14 @@
       }
       const q = [];
       let bossNames = [];
+      // Endless wave modifiers
+      if (!this.tutorial && w > this.diff.waves && w % 10 !== 0 && Math.random() < 0.3) {
+        const mod = U.pick(Object.keys(CS.ENDLESS_MODS));
+        (this.waveMods || (this.waveMods = {}))[w] = mod;
+        this.emit('toast', CS.ENDLESS_MODS[mod].name + ': ' + CS.ENDLESS_MODS[mod].desc);
+      }
       for (const g of groups) {
-        for (let i = 0; i < g.count; i++) q.push({ t: g.start + i * g.gap, type: g.type });
+        for (let i = 0; i < g.count; i++) q.push({ t: g.start + i * g.gap, type: g.type, mult: g.mult || 1 });
         if (E[g.type].boss) bossNames.push(E[g.type].name);
       }
       // Random events
@@ -352,13 +358,22 @@
       e.abT = 1 + Math.random(); e.abT2 = 3; e.abT3 = 5; e.abT4 = 7; e.phaseT = 2 + Math.random() * 2; e.phased = false; e.burrowT = 0;
       e.leader = null; e.segIdx = 0; e.segAlive = 0; e.segs = null; e.transformed = false; e.rootPhase = 0; e.speedMul = 1; e.speedModeT = 9;
       e.elite = null; e.age = 0; e.escaped = false; e.cacheValue = 0; e.wobble = Math.random() * 6.28; e.lastHitBy = null;
-      e.inTunnel = false;
+      e.inTunnel = false; e.knocked = 0; e.pulled = 0;
       // Elite roll
       if (!def.boss && !opts?.noElite && type !== 'mini' && type !== 'cache' && type !== 'wormseg') {
         const ch = this.tutorial ? 0 : CS.eliteChance(wave, this.diff.elite, this.endless);
         if (ch > 0 && Math.random() < ch) this.makeElite(e, U.pick(CS.ELITE_IDS));
       }
       if (type === 'cache') e.cacheValue = 250 + wave * 12;
+      if (opts && opts.mult && opts.mult !== 1) { e.maxHp = e.hp = Math.round(e.maxHp * opts.mult); e.shieldMax = e.shield = Math.round(e.shieldMax * opts.mult); }
+      const wm = this.waveMods && this.waveMods[wave];
+      if (wm && !def.boss) {
+        if (wm === 'armored') e.armor += 3;
+        else if (wm === 'shielded' && !e.shieldMax) { e.shieldMax = e.shield = Math.round(e.maxHp * 0.4); }
+        else if (wm === 'swift') e.speed *= 1.25;
+        else if (wm === 'regen' && !e.elite) this.makeElite(e, 'regen');
+        else if (wm === 'elite' && !e.elite && Math.random() < CS.eliteChance(wave, this.diff.elite, true) * 2) this.makeElite(e, U.pick(CS.ELITE_IDS));
+      }
       this.enemies.push(e);
       if (opts && opts.count !== false) this.waveLeft[wave] = (this.waveLeft[wave] || 0) + 1;
       if (def.boss) this.onBossSpawn(e);
@@ -512,7 +527,7 @@
       if (s.vuln) { e.vulnT = Math.max(e.vulnT, s.vulnDur); e.vulnAmt = Math.max(e.vulnAmt, s.vuln); }
       if (s.shred && !o.noShred) e.shred = Math.min(e.armor, e.shred + s.shred);
       if (s.reveal && e.stealth) e.permaReveal = true;
-      if (s.knock && !e.boss) e.dist = Math.max(0, e.dist - s.knock * (o.knockMul || 1));
+      if (s.knock && !e.boss && e.knocked < 120) { const k = s.knock * (o.knockMul || 1); e.knocked += k; e.dist = Math.max(0, e.dist - k); }
     }
 
     infect(e, t, mult) {
@@ -1130,7 +1145,7 @@
         T.pull -= dt;
         if (T.pull <= 0 && has) {
           T.pull = s.pullEvery;
-          for (const e of inside) e.dist = Math.max(0, e.dist - s.pullDist * (e.boss ? 0.3 : 1));
+          for (const e of inside) { if (e.pulled > 400) continue; const k = s.pullDist * (e.boss ? 0.3 : 1); e.pulled += k; e.dist = Math.max(0, e.dist - k); }
           this.fx.ring(t.x, t.y, range, 8, '#c77dff', 0.35, 2);
         }
       }
@@ -1138,7 +1153,7 @@
         T.implode -= dt;
         if (T.implode <= 0 && has) {
           T.implode = s.implodeEvery;
-          for (const e of inside) { this.damage(e, s.implodeDmg, 'fire', t, { area: true }); if (e.alive) e.dist = Math.max(0, e.dist - s.implodePull * (e.boss ? 0.3 : 1)); }
+          for (const e of inside) { this.damage(e, s.implodeDmg, 'fire', t, { area: true }); if (e.alive && e.pulled < 400) { const k = s.implodePull * (e.boss ? 0.3 : 1); e.pulled += k; e.dist = Math.max(0, e.dist - k); } }
           this.fx.ring(t.x, t.y, range * 1.2, 4, '#e7c2ff', 0.45, 5);
           this.fx.flash(t.x, t.y, range * 1.5, '#c77dff', 0.3);
           this.fx.shake(2);
@@ -1517,7 +1532,7 @@
           const s = this.spawnQueue.shift();
           const npaths = this.map.paths.length;
           const pi = (this.rr++) % npaths;
-          this.spawnEnemy(s.type, pi, 0, s.wave, { count: false });
+          this.spawnEnemy(s.type, pi, 0, s.wave, { count: false, mult: s.mult });
         }
       }
       // Grid

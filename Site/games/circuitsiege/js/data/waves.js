@@ -125,8 +125,23 @@
       groups.push({ type, count, gap, start: t });
       t += 2 + r() * 4;
     }
+    // Keep huge waves playable on modest hardware: cap total count, compensate with HP.
+    const total = groups.reduce((a, g) => a + g.count, 0);
+    const CAP = 360;
+    if (total > CAP) {
+      const k = CAP / total;
+      for (const g of groups) { g.count = Math.max(1, Math.round(g.count * k)); g.gap /= k; g.gap = Math.min(g.gap, 1.2); g.mult = 1 / k; }
+    }
     return groups;
   }
+
+  CS.ENDLESS_MODS = {
+    armored: { id: 'armored', name: 'ARMORED WAVE', desc: 'All enemies +3 armor' },
+    shielded: { id: 'shielded', name: 'SHIELDED WAVE', desc: 'All enemies carry energy shields' },
+    swift: { id: 'swift', name: 'SWIFT WAVE', desc: 'Enemies move 25% faster' },
+    regen: { id: 'regen', name: 'REGENERATING WAVE', desc: 'All enemies regenerate' },
+    elite: { id: 'elite', name: 'ELITE SURGE', desc: 'Elite chance tripled' },
+  };
 
   CS.getWave = function (w, seed, endless) {
     if (w < HAND.length && HAND[w]) return parse(HAND[w]);

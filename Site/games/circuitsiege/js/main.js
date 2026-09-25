@@ -78,7 +78,9 @@
       this.menus = new CS.Menus(this);
       this.match = null;
       this.screen = 'menu';
-      this.autoQ = 'high';
+      // Start weaker machines (few cores / very high-DPI screens) on Medium; Auto can lower further.
+      const cores = navigator.hardwareConcurrency || 4;
+      this.autoQ = cores <= 4 || (window.devicePixelRatio || 1) * window.innerWidth > 3000 ? 'medium' : 'high';
       this.fps = { frames: 0, time: 0, value: 60, low: 0 };
       this.last = performance.now();
       this.t = 0;

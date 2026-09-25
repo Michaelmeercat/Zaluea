@@ -239,6 +239,7 @@
   };
 
   S.iconUnlocked = function (id) {
+    if (id && id.startsWith('tw:')) return CS.TOWERS[id.slice(3)] && S.mastery(id.slice(3)).lvl >= 6;
     const ic = P.ICONS[id];
     if (!ic) return false;
     if (ic.ach) return !!d().achievements[ic.ach];
@@ -251,6 +252,11 @@
     if (d().achievements.nightmare_fuel) t.push('Nightmare Walker');
     if (d().achievements.root_access) t.push('Root Breaker');
     return t;
+  };
+
+  S.iconHTML = function (id) {
+    if (id && id.startsWith('tw:') && CS.Spr) return '<img src="' + CS.Spr.towerIcon(id.slice(3), [5, 0, 2], S.skinOf(id.slice(3)), 64) + '" style="width:80%;height:80%" alt="">';
+    return (P.ICONS[id] || P.ICONS.chip).glyph;
   };
 
   CS.Save = S;
