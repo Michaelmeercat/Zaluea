@@ -7,5 +7,7 @@ This is an official proxy of [Zaluea Network](https://discord.gg/8SDaUugBqu).
 
 Wind-Up Escape has no build step. Open `Site/games/windup-escape/index.html` directly or serve the `Site` folder. `node Site/games/windup-escape/tools/check-levels.js` solves every room to prove it can be beaten.
 
+To play without internet (for example on a Chromebook), download `Site/games/windup-escape/wind-up-escape-offline.html` and open it from the Files app. It is a single file with everything inside. Rebuild it after changes with `node Site/games/windup-escape/tools/build-offline.js`.
+
 ## Credits
 Zaluea uses [Ultraviolet](https://github.com/titaniumnetwork-dev/Ultraviolet)
