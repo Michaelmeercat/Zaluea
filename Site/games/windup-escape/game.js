@@ -122,8 +122,9 @@
     var L = G.L, top, bottom, side = 12;
     if (G.mode === 'play') {
       var r = ui.hud.getBoundingClientRect();
-      top = (r.height ? r.bottom : 100) + 10;
-      bottom = 62;
+      var compact = view.h <= 520 && view.w > view.h;
+      top = (r.height ? r.bottom : 100) + (compact ? 6 : 10);
+      bottom = compact ? 38 : 62;
     } else {
       top = 20; bottom = 20;
     }
@@ -393,6 +394,8 @@
     G.lastTeleport = false;
     G.bonked = false;
     if (turns % 4) { sfx('turn', turns % 4); turnSpark(); }
+    var sp = tileXY(s.pos);
+    parts.push({ k: 'puff', x: sp.x + 0.5 + (Math.random() - 0.5) * 0.2, y: sp.y + 0.78, vx: 0, vy: -0.15, life: 0.35, max: 0.35 });
     var left = Sim.springLeft(L, s);
     sfx('step', left * BEAT <= 3);
     if (L.pistons.length && pistonChanges(s.b)) sfx('piston');
@@ -949,7 +952,7 @@
         var hh = e.h;
         Draw.block(ctx, px(q.x), py(q.y), T, col, view.d * hh, null);
         ctx.fillStyle = 'rgba(255,255,255,0.85)';
-        Draw.ellipse(ctx, px(q.x + 0.5), py(q.y + 0.5) - view.d * hh, T * 0.12, T * 0.12);
+        Draw.pistonEmblem(ctx, px(q.x + 0.5), py(q.y + 0.5) - view.d * hh, T, L.pistonGroup[e.piston]);
         ctx.fill();
       } else if (e.item === 'key') {
         Draw.goldKey(ctx, px(e.x + 0.5), py(e.y + 0.5), T, t + e.x * 0.7);
@@ -1073,6 +1076,11 @@
         ctx.fillStyle = q.c;
         ctx.fillRect(-T * q.s / 2, -T * q.s * 0.3, T * q.s, T * q.s * 0.6 * Math.abs(Math.cos(q.rot * 1.7)));
         ctx.restore();
+      } else if (q.k === 'puff') {
+        ctx.globalAlpha = a * 0.45;
+        ctx.fillStyle = '#ffffff';
+        Draw.ellipse(ctx, px(q.x), py(q.y), T * (0.1 + (1 - a) * 0.12), T * (0.06 + (1 - a) * 0.06));
+        ctx.fill();
       } else if (q.k === 'ring') {
         ctx.globalAlpha = a;
         ctx.strokeStyle = q.c;

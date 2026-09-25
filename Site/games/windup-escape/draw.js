@@ -232,9 +232,18 @@
     ctx.setLineDash([]);
     ctx.fillStyle = col[0];
     ctx.globalAlpha = warn ? 0.55 + 0.45 * warn : 0.35;
-    ellipse(ctx, x + T / 2, y + T / 2, T * 0.12, T * 0.12);
+    pistonEmblem(ctx, x + T / 2, y + T / 2, T * (warn ? 1 + warn * 0.25 : 1), group);
     ctx.fill();
     ctx.globalAlpha = 1;
+  }
+
+  // Group A shows a circle, group B a diamond, so they differ by shape too.
+  function pistonEmblem(ctx, cx, cy, T, group) {
+    if (group === 0) { ellipse(ctx, cx, cy, T * 0.12, T * 0.12); return; }
+    var r = T * 0.15;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy - r); ctx.lineTo(cx + r, cy); ctx.lineTo(cx, cy + r); ctx.lineTo(cx - r, cy);
+    ctx.closePath();
   }
 
   function tube(ctx, x, y, T, id, t, pulse) {
@@ -280,11 +289,13 @@
       ctx.stroke();
       ctx.globalAlpha = 1;
     }
-    // pair number badge
+    // 1-3 pips on the rim tell twin tubes apart without relying on colour
     ctx.fillStyle = '#fff';
-    ctx.font = '700 ' + Math.round(T * 0.2) + 'px Fredoka, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
+    var n = ((id - 1) % 3) + 1;
+    for (var p = 0; p < n; p++) {
+      ellipse(ctx, cx + (p - (n - 1) / 2) * T * 0.12, cy + T * 0.28, T * 0.04, T * 0.04);
+      ctx.fill();
+    }
   }
 
   // side: 0 top,1 right,2 bottom,3 left, -1 interior
@@ -666,7 +677,7 @@
   root.WDraw = {
     C: C, rr: rr, ellipse: ellipse, star: star, hash: hash,
     wallpaper: wallpaper, floor: floor, hole: hole, block: block, frame: frame,
-    arrowPad: arrowPad, cookie: cookie, pistonBase: pistonBase, tube: tube,
+    arrowPad: arrowPad, cookie: cookie, pistonBase: pistonBase, pistonEmblem: pistonEmblem, tube: tube,
     exitDoor: exitDoor, startPad: startPad, goldKey: goldKey, winder: winder,
     butterflyKey: butterflyKey, marble: marble, toy: toy, turnMark: turnMark, heading: heading
   };
