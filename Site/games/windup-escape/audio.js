@@ -23,7 +23,10 @@
       var d = noiseBuf.getChannelData(0);
       for (var i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
     }
-    if (ctx.state === 'suspended') ctx.resume();
+    if (ctx.state === 'suspended') {
+      var r = ctx.resume();
+      if (r && r.catch) r.catch(function () { /* stays silent until the next gesture */ });
+    }
     return true;
   }
 
@@ -170,6 +173,11 @@
       tone({ f: 1760, d: 0.08, v: 0.08, type: 'square' });
     }
   };
+  // Sound must never stop the game: swallow any audio error.
+  Object.keys(sfx).forEach(function (k) {
+    var play = sfx[k];
+    sfx[k] = function (a) { try { play(a); } catch (e) { /* no audio */ } };
+  });
 
   // ---- Music box ----------------------------------------------------------
   // 120 bpm, eighth-note grid. 0 = rest. Two 8-bar phrases.
@@ -220,7 +228,7 @@
   }
 
   root.WAudio = {
-    unlock: function () { if (ensure()) startMusic(); },
+    unlock: function () { try { if (ensure()) startMusic(); } catch (e) { /* no audio */ } },
     sfx: sfx,
     duck: duck,
     get soundOn() { return soundOn; },

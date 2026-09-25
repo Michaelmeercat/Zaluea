@@ -1418,6 +1418,7 @@
   resize();
   goTitle();
   window.requestAnimationFrame(frame);
+  document.body.classList.add('booted');
   // Block letters are pre-rendered, so redraw them once the web font arrives.
   if (document.fonts && document.fonts.addEventListener) {
     document.fonts.addEventListener('loadingdone', function () { layoutBoard(); });

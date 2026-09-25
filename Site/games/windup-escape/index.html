@@ -15,6 +15,15 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <script>
+    // Report start-up errors on screen instead of leaving a dead Play button.
+    window.onerror = function (msg, src, line) {
+      var box = document.getElementById(document.body.className.indexOf('booted') < 0 ? 'boot-err' : 'run-err');
+      if (!box) return;
+      box.textContent = 'Error: ' + msg + (line ? ' (line ' + line + ')' : '');
+      box.className = 'shown';
+    };
+  </script>
   <div id="app">
     <canvas id="bg" aria-hidden="true"></canvas>
     <canvas id="board" aria-label="Game board"></canvas>
@@ -52,6 +61,12 @@
           <button id="btn-music" class="icon-btn toggle" aria-label="Music"></button>
         </div>
         <p class="controls-note"><span class="touch-only">Tap anywhere</span><span class="key-only">Press <kbd>Space</kbd></span> to turn right</p>
+      </div>
+      <!-- Shown only if the game script never starts (e.g. a file preview with JavaScript off). -->
+      <div id="boot-msg" role="alert">
+        <strong>The game can't start in this window</strong>
+        <span>JavaScript isn't running here. If you opened the file in a preview (the Claude app, Google Drive, email), download it instead, then double-click it in the Files app so it opens in Chrome.</span>
+        <code id="boot-err"></code>
       </div>
     </section>
 
@@ -127,6 +142,7 @@
     </div>
 
     <div id="toast" class="hidden"></div>
+    <div id="run-err"></div>
   </div>
 
   <script src="sim.js"></script>

@@ -56,7 +56,10 @@ html, body {
 
 #app {
   position: fixed;
-  inset: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
   overflow: hidden;
   touch-action: none;
   user-select: none;
@@ -67,7 +70,10 @@ html, body {
 
 #bg, #board {
   position: absolute;
-  inset: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
   width: 100%;
   height: 100%;
   display: block;
@@ -339,7 +345,10 @@ body.has-keys p.key-only { display: block; }
 /* ------------------------------------------------------------------ screens */
 .screen {
   position: absolute;
-  inset: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -363,6 +372,7 @@ body.has-keys p.key-only { display: block; }
   margin: 0;
   line-height: 0.92;
   font-weight: 700;
+  font-size: 72px;
   font-size: clamp(54px, 15vw, 104px);
   letter-spacing: -0.01em;
 }
@@ -407,6 +417,7 @@ body.has-keys p.key-only { display: block; }
   flex: 1;
   margin: 0;
   white-space: nowrap;
+  font-size: 32px;
   font-size: clamp(22px, 6.4vw, 32px);
   color: #fff;
   text-shadow: 0 3px 0 rgba(60, 30, 90, 0.4);
@@ -419,6 +430,7 @@ body.has-keys p.key-only { display: block; }
   margin-top: 18px;
   display: grid;
   grid-template-columns: repeat(5, 1fr);
+  gap: 14px;
   gap: clamp(8px, 2.6vw, 14px);
   overflow-y: auto;
   padding: 10px 8px 16px;
@@ -427,8 +439,10 @@ body.has-keys p.key-only { display: block; }
 .lvl {
   position: relative;
   aspect-ratio: 1 / 1.08;
+  border-radius: 20px;
   border-radius: clamp(14px, 4vw, 20px);
   color: #fff;
+  font-size: 30px;
   font-size: clamp(22px, 6.6vw, 30px);
   font-weight: 700;
   text-shadow: 0 2px 0 rgba(0, 0, 0, 0.2);
@@ -445,7 +459,9 @@ body.has-keys p.key-only { display: block; }
 .lvl:active { transform: translateY(5px); box-shadow: 0 2px 0 var(--bd); }
 .lvl .lvl-stars { display: flex; gap: 1px; height: clamp(13px, 3.8vw, 18px); }
 .lvl .lvl-stars i {
+  width: 18px;
   width: clamp(13px, 3.8vw, 18px);
+  height: 18px;
   height: clamp(13px, 3.8vw, 18px);
   display: block;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 2.6l2.9 5.9 6.5.9-4.7 4.6 1.1 6.5L12 17.4l-5.8 3.1 1.1-6.5L2.6 9.4l6.5-.9z' fill='rgba(0,0,0,0.22)'/%3E%3C/svg%3E");
@@ -609,6 +625,48 @@ body.has-keys p.key-only { display: block; }
   animation: fade-in 0.2s ease;
 }
 
+/* ---------------------------------------------------------------- boot guard */
+/* Until game.js finishes booting, Play is hidden and a help message fades in. */
+body:not(.booted) #btn-play,
+body:not(.booted) .toggles,
+body:not(.booted) .controls-note,
+body:not(.booted) #title-toy { display: none; }
+#boot-msg {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 440px;
+  margin-top: 18px;
+  padding: 16px 20px 18px;
+  border-radius: 22px;
+  background: var(--card);
+  color: var(--ink);
+  text-align: left;
+  font-size: 16px;
+  line-height: 1.35;
+  box-shadow: 0 6px 0 var(--card-edge), 0 14px 28px rgba(40, 20, 70, 0.3);
+  opacity: 0;
+  animation: fade-in 0.4s ease 1.2s forwards;
+}
+#boot-msg strong { font-size: 19px; color: var(--red-d); }
+#boot-err:not(.shown) { display: none; }
+#boot-err, #run-err { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 13px; white-space: pre-wrap; word-break: break-word; }
+#boot-err { background: #fff0f0; color: #a61e2d; border-radius: 10px; padding: 8px 10px; }
+body.booted #boot-msg { display: none; }
+#run-err:not(.shown) { display: none; }
+#run-err {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: calc(64px + var(--safe-b));
+  z-index: 5;
+  background: #fff0f0;
+  color: #a61e2d;
+  border-radius: 12px;
+  padding: 8px 12px;
+  pointer-events: none;
+}
+
 /* --------------------------------------------------------------- animations */
 @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
 @keyframes card-in { from { opacity: 0; transform: translate(-50%, -40%) scale(0.85); } to { opacity: 1; transform: translate(-50%, -50%) scale(1); } }
@@ -660,6 +718,15 @@ body.has-keys p.key-only { display: block; }
 </style>
 </head>
 <body>
+  <script>
+    // Report start-up errors on screen instead of leaving a dead Play button.
+    window.onerror = function (msg, src, line) {
+      var box = document.getElementById(document.body.className.indexOf('booted') < 0 ? 'boot-err' : 'run-err');
+      if (!box) return;
+      box.textContent = 'Error: ' + msg + (line ? ' (line ' + line + ')' : '');
+      box.className = 'shown';
+    };
+  </script>
   <div id="app">
     <canvas id="bg" aria-hidden="true"></canvas>
     <canvas id="board" aria-label="Game board"></canvas>
@@ -697,6 +764,12 @@ body.has-keys p.key-only { display: block; }
           <button id="btn-music" class="icon-btn toggle" aria-label="Music"></button>
         </div>
         <p class="controls-note"><span class="touch-only">Tap anywhere</span><span class="key-only">Press <kbd>Space</kbd></span> to turn right</p>
+      </div>
+      <!-- Shown only if the game script never starts (e.g. a file preview with JavaScript off). -->
+      <div id="boot-msg" role="alert">
+        <strong>The game can't start in this window</strong>
+        <span>JavaScript isn't running here. If you opened the file in a preview (the Claude app, Google Drive, email), download it instead, then double-click it in the Files app so it opens in Chrome.</span>
+        <code id="boot-err"></code>
       </div>
     </section>
 
@@ -772,6 +845,7 @@ body.has-keys p.key-only { display: block; }
     </div>
 
     <div id="toast" class="hidden"></div>
+    <div id="run-err"></div>
   </div>
 
   <script>/* sim.js */
@@ -1366,7 +1440,10 @@ body.has-keys p.key-only { display: block; }
       var d = noiseBuf.getChannelData(0);
       for (var i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
     }
-    if (ctx.state === 'suspended') ctx.resume();
+    if (ctx.state === 'suspended') {
+      var r = ctx.resume();
+      if (r && r.catch) r.catch(function () { /* stays silent until the next gesture */ });
+    }
     return true;
   }
 
@@ -1513,6 +1590,11 @@ body.has-keys p.key-only { display: block; }
       tone({ f: 1760, d: 0.08, v: 0.08, type: 'square' });
     }
   };
+  // Sound must never stop the game: swallow any audio error.
+  Object.keys(sfx).forEach(function (k) {
+    var play = sfx[k];
+    sfx[k] = function (a) { try { play(a); } catch (e) { /* no audio */ } };
+  });
 
   // ---- Music box ----------------------------------------------------------
   // 120 bpm, eighth-note grid. 0 = rest. Two 8-bar phrases.
@@ -1563,7 +1645,7 @@ body.has-keys p.key-only { display: block; }
   }
 
   root.WAudio = {
-    unlock: function () { if (ensure()) startMusic(); },
+    unlock: function () { try { if (ensure()) startMusic(); } catch (e) { /* no audio */ } },
     sfx: sfx,
     duck: duck,
     get soundOn() { return soundOn; },
@@ -3698,6 +3780,7 @@ body.has-keys p.key-only { display: block; }
   resize();
   goTitle();
   window.requestAnimationFrame(frame);
+  document.body.classList.add('booted');
   // Block letters are pre-rendered, so redraw them once the web font arrives.
   if (document.fonts && document.fonts.addEventListener) {
     document.fonts.addEventListener('loadingdone', function () { layoutBoard(); });
