@@ -24,7 +24,7 @@
       ]
     },
     {
-      name: 'Bonk!', intro: 'bonk', dir: 'left', spring: 36, par: 20,
+      name: 'Bonk!', intro: 'bonk', dir: 'left', spring: 36, par: 21,
       map: [
         '#######',
         '#k...S#',
@@ -36,7 +36,7 @@
       ]
     },
     {
-      name: 'No Left Turns?', intro: 'left', dir: 'up', spring: 36, par: 18,
+      name: 'No Left Turns?', intro: 'left', dir: 'up', spring: 36, par: 17,
       map: [
         '#####E#',
         '#...#.#',
@@ -47,7 +47,7 @@
       ]
     },
 {
-      name: 'Wind-Up Keys', intro: 'winder', dir: 'right', spring: 12, par: 34, needsWinder: true,
+      name: 'Wind-Up Keys', intro: 'winder', dir: 'right', spring: 12, par: 33, needsWinder: true,
       map: [
         '#########',
         '#S......#',
@@ -73,7 +73,7 @@
       ]
     },
     {
-      name: 'Arrow Pads', intro: 'arrow', dir: 'right', spring: 50, par: 36,
+      name: 'Arrow Pads', intro: 'arrow', dir: 'right', spring: 50, par: 33,
       map: [
         '#########',
         '#S.....v#',
@@ -100,7 +100,7 @@
       ]
     },
     {
-      name: 'Rush Hour', dir: 'right', spring: 40, par: 26,
+      name: 'Rush Hour', dir: 'right', spring: 44, par: 25,
       tip: 'Marbles never stop. Wait for a gap!',
       marbles: [
         { path: [[1, 2], [7, 2]] },
@@ -120,7 +120,7 @@
       ]
     },
     {
-      name: 'Pop-Up Blocks', intro: 'piston', dir: 'right', spring: 50, par: 36,
+      name: 'Pop-Up Blocks', intro: 'piston', dir: 'right', spring: 46, par: 28,
       map: [
         '#########',
         '#S..A..k#',
@@ -132,7 +132,7 @@
       ]
     },
     {
-      name: 'Cookie Jar', intro: 'crumble', dir: 'right', spring: 50, par: 30,
+      name: 'Cookie Jar', intro: 'crumble', dir: 'right', spring: 40, par: 21,
       map: [
         '#######',
         '#Sccck#',
@@ -144,7 +144,7 @@
       ]
     },
     {
-      name: 'Warp Tubes', intro: 'pipe', dir: 'right', spring: 50, par: 30,
+      name: 'Warp Tubes', intro: 'pipe', dir: 'right', spring: 40, par: 24,
       map: [
         '#########',
         '#S...1..#',
@@ -158,7 +158,7 @@
       ]
     },
     {
-      name: 'Roundabout', dir: 'right', spring: 50, par: 30,
+      name: 'Roundabout', dir: 'right', spring: 46, par: 29,
       tip: 'Ride the arrows round, then tap to hop off.',
       map: [
         '#########',
@@ -173,9 +173,9 @@
       ]
     },
     {
-      name: 'Tube Hop', dir: 'right', spring: 50, par: 30,
+      name: 'Tube Hop', dir: 'right', spring: 44, par: 29,
       tip: 'Tubes keep you facing the same way.',
-      marbles: [{ path: [[6, 5], [6, 7]] }],
+      marbles: [{ path: [[5, 5], [7, 5], [7, 7], [5, 7]], offset: 4 }],
       map: [
         '#########',
         '#S..#..k#',
@@ -183,13 +183,13 @@
         '#.k.#..2#',
         '#########',
         '#2.3#...#',
-        '#...#...E',
-        '#..k#3..#',
+        '#...#.3.E',
+        '#..k#..k#',
         '#########'
       ]
     },
     {
-      name: 'Cookie Bridges', dir: 'right', spring: 50, par: 30,
+      name: 'Cookie Bridges', dir: 'right', spring: 44, par: 29,
       tip: 'Cookies crumble behind you. No going back!',
       map: [
         '#########',
@@ -203,8 +203,9 @@
       ]
     },
     {
-      name: 'Stop and Go', dir: 'right', spring: 50, par: 30,
-      marbles: [{ path: [[1, 3], [7, 3]] }],
+      name: 'Stop and Go', dir: 'right', spring: 46, par: 32,
+      tip: 'Blocks and marbles both keep time. Watch the rhythm!',
+      marbles: [{ path: [[3, 3], [7, 3]] }],
       map: [
         '#########',
         '#S..A..k#',
@@ -216,7 +217,7 @@
       ]
     },
     {
-      name: 'Tick-Tock', dir: 'right', spring: 50, par: 30,
+      name: 'Tick-Tock', dir: 'right', spring: 36, par: 21,
       pistonPeriod: 2, pistonUpFor: 1,
       tip: 'Fast blocks! Bounce once to get in rhythm.',
       map: [
@@ -230,7 +231,7 @@
       ]
     },
     {
-      name: 'Marble Alley', dir: 'right', spring: 60, par: 40,
+      name: 'Marble Alley', dir: 'right', spring: 50, par: 37,
       tip: 'Duck into a side pocket to let the marble pass.',
       marbles: [{ path: [[1, 3], [7, 3]] }],
       map: [
@@ -244,7 +245,7 @@
       ]
     },
     {
-      name: 'Spin Cycle', dir: 'up', spring: 70, par: 40,
+      name: 'Spin Cycle', dir: 'up', spring: 46, par: 32,
       marbles: [{ path: [[1, 1], [7, 1], [7, 7], [1, 7]] }],
       map: [
         '#########',
@@ -259,7 +260,7 @@
       ]
     },
     {
-      name: 'Clockwork', dir: 'right', spring: 14, par: 24,
+      name: 'Clockwork', dir: 'right', spring: 14, par: 20,
       tip: 'Short spring! Grab the wind-up keys.',
       marbles: [{ path: [[1, 3], [7, 3]] }],
       map: [
@@ -274,7 +275,7 @@
       ]
     },
     {
-      name: 'The Great Escape', dir: 'right', spring: 20, par: 40,
+      name: 'The Great Escape', dir: 'right', spring: 20, par: 33,
       marbles: [{ path: [[1, 5], [7, 5]] }, { path: [[7, 9], [1, 9]], offset: 4 }],
       map: [
         '#########',

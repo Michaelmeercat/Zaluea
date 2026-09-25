@@ -32,6 +32,26 @@ function draw(L, turns) {
   return grid.map(function (r) { return '    ' + r.join(' '); }).join('\n');
 }
 
+// Route a player would plan if they ignored everything that moves.
+function naiveCheck(def, L) {
+  if (!L.marbles.length && !L.pistons.length) return '';
+  var still = Object.assign({}, def, { marbles: [], map: def.map.map(function (r) { return r.replace(/[AB]/g, '.'); }) });
+  var SL = Sim.parseLevel(still);
+  var plan = Solver.solve(SL, { allKeys: true, maxTap: 1 }) || Solver.solve(SL, { allKeys: true });
+  if (!plan) return ' | naive: none';
+  var s = Sim.initialState(L), cause = null;
+  for (var i = 0; i < plan.turns.length && s.status === 0; i++) {
+    var r = Sim.step(L, s, plan.turns[i]);
+    if (r.ev.kind === 'bonk' && !cause) {
+      var t = L.tile[s.pos + (Sim.DY[r.ev.dir] * L.w) + Sim.DX[r.ev.dir]];
+      if (t === Sim.PISTON) cause = 'bonked a block';
+    }
+    s = r.state;
+  }
+  if (s.status === 1 && s.keys === (1 << L.keys.length) - 1 && !cause) return ' | naive: WORKS';
+  return ' | naive: fails (' + (cause || s.cause || 'lost keys') + ')';
+}
+
 function tapInfo(turns) {
   var taps = 0, multi = 0;
   turns.forEach(function (t) { taps += t; if (t >= 2) multi++; });
@@ -69,7 +89,7 @@ LEVELS.forEach(function (def, idx) {
     ' | all keys ' + (full ? (full.beats * BEAT).toFixed(1) + 's ' + tapInfo(full.turns) : '---') +
     ' | 1-tap ' + (single ? (single.beats * BEAT).toFixed(1) + 's' : '---') +
     ' | par ' + (def.par * BEAT).toFixed(1) + 's' +
-    ' | period ' + L.period;
+    ' | period ' + L.period + naiveCheck(def, L);
   console.log(line + (problems.length ? '   <<< ' + problems.join('; ') : ''));
   if (problems.length) failures++;
   if (verbose && full) {

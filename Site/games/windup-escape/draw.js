@@ -332,7 +332,7 @@
 
   // ------------------------------------------------------------------- items
   function goldKey(ctx, cx, cy, T, t, scale) {
-    scale = scale == null ? 1 : scale;
+    scale = (scale == null ? 1 : scale) * 1.18;
     var bob = Math.sin(t * 3) * T * 0.05;
     ctx.fillStyle = 'rgba(80,40,0,0.2)';
     ellipse(ctx, cx, cy + T * 0.24, T * 0.2 * scale, T * 0.07 * scale);
@@ -404,23 +404,31 @@
     scale = scale == null ? 1 : scale;
     var bob = Math.sin(t * 2.6 + 1) * T * 0.05;
     ctx.fillStyle = 'rgba(0,30,80,0.2)';
-    ellipse(ctx, cx, cy + T * 0.25, T * 0.22 * scale, T * 0.07 * scale);
+    ellipse(ctx, cx, cy + T * 0.3, T * 0.26 * scale, T * 0.08 * scale);
     ctx.fill();
     ctx.save();
-    ctx.translate(cx, cy - T * 0.05 + bob);
+    ctx.translate(cx, cy - T * 0.04 + bob);
     ctx.scale(scale, scale);
-    butterflyKey(ctx, T, t * 3, C.winder, C.winderDark, 0.26);
+    var glow = 0.5 + 0.5 * Math.sin(t * 4);
+    ctx.fillStyle = 'rgba(165,216,255,' + (0.45 + glow * 0.25) + ')';
+    ellipse(ctx, 0, 0, T * 0.36, T * 0.36);
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.9)';
+    ctx.lineWidth = T * 0.04;
+    ctx.stroke();
+    ctx.translate(0, T * 0.06);
+    butterflyKey(ctx, T, t * 3, C.winder, C.winderDark, 0.34);
     ctx.restore();
     // "+" badge
     ctx.save();
-    ctx.translate(cx + T * 0.24, cy - T * 0.26 + bob);
+    ctx.translate(cx + T * 0.27, cy - T * 0.27 + bob);
     ctx.scale(scale, scale);
-    ctx.fillStyle = '#fff';
-    ellipse(ctx, 0, 0, T * 0.11, T * 0.11);
-    ctx.fill();
     ctx.fillStyle = C.winderDark;
-    ctx.fillRect(-T * 0.06, -T * 0.018, T * 0.12, T * 0.036);
-    ctx.fillRect(-T * 0.018, -T * 0.06, T * 0.036, T * 0.12);
+    ellipse(ctx, 0, 0, T * 0.12, T * 0.12);
+    ctx.fill();
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(-T * 0.065, -T * 0.02, T * 0.13, T * 0.04);
+    ctx.fillRect(-T * 0.02, -T * 0.065, T * 0.04, T * 0.13);
     ctx.restore();
   }
 
@@ -460,7 +468,7 @@
   // o: { ang (radians, 0 = up, clockwise), walk (radians), keySpin, scale,
   //      alpha, tilt, squash, blink (0..1), dizzy, sleepy, shadow }
   function toy(ctx, cx, cy, T, o) {
-    var r = T * 0.3;
+    var r = T * 0.32;
     var hx = Math.sin(o.ang), hy = -Math.cos(o.ang);
     var sc = o.scale == null ? 1 : o.scale;
     var sq = o.squash || 0;
@@ -624,24 +632,33 @@
     ctx.restore();
   }
 
-  // Chevron showing where the toy will head at the next tile.
+  // Arrow on the next tile showing which way the toy will turn there.
   function heading(ctx, cx, cy, T, dirAng, n, pulse) {
     ctx.save();
     ctx.translate(cx, cy);
     ctx.rotate(dirAng);
-    var d = T * 0.52;
-    ctx.globalAlpha = 0.95;
-    ctx.fillStyle = '#ffffff';
-    ctx.strokeStyle = '#ff4d8d';
-    ctx.lineWidth = T * 0.05;
+    var s = 1 + pulse * 0.2;
+    ctx.scale(s, s);
     ctx.lineJoin = 'round';
-    var s = 1 + pulse * 0.25;
+    ctx.lineCap = 'round';
     ctx.beginPath();
-    ctx.moveTo(0, -d - T * 0.14 * s);
-    ctx.lineTo(T * 0.15 * s, -d + T * 0.03);
-    ctx.lineTo(-T * 0.15 * s, -d + T * 0.03);
-    ctx.closePath();
+    ctx.moveTo(0, T * 0.12);
+    ctx.lineTo(0, -T * 0.2);
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = T * 0.2;
     ctx.stroke();
+    ctx.strokeStyle = '#ff4d8d';
+    ctx.lineWidth = T * 0.1;
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(0, -T * 0.42);
+    ctx.lineTo(T * 0.2, -T * 0.16);
+    ctx.lineTo(-T * 0.2, -T * 0.16);
+    ctx.closePath();
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = T * 0.07;
+    ctx.stroke();
+    ctx.fillStyle = '#ff4d8d';
     ctx.fill();
     ctx.restore();
   }

@@ -58,7 +58,7 @@
     start: $('card-start'), startNum: $('start-num'), startName: $('start-name'), intro: $('start-intro'),
     introIco: $('intro-ico'), introText: $('intro-text'), tip: $('start-tip'), goalKeys: $('goal-keys'), goalTime: $('goal-time'),
     result: $('card-result'), resultTitle: $('result-title'), resultStars: $('result-stars'), resultSub: $('result-sub'),
-    resultGoals: $('result-goals'), next: $('btn-next'), retry: $('btn-retry'), show: $('btn-show'), spaceAction: $('space-action'),
+    resultGoals: $('result-goals'), next: $('btn-next'), retry: $('btn-retry'), show: $('btn-show'), spaceAction: $('space-action'), rHint: $('r-hint'),
     pause: $('card-pause'), titleToy: $('title-toy')
   };
 
@@ -615,6 +615,7 @@
     var time = s.b * BEAT;
     var stars = [true, got === nk, s.b <= def.par];
     Sound.duck(true);
+    hide(ui.hint);
     var starEls = ui.resultStars.children;
     for (var i = 0; i < 3; i++) starEls[i].classList.remove('on');
     ui.resultGoals.innerHTML = '';
@@ -642,6 +643,7 @@
       });
       ui.next.classList.remove('hidden');
       ui.spaceAction.textContent = last ? 'rooms' : 'next room';
+      show(ui.rHint);
     } else {
       G.fails++;
       var f = FAILS[G.cause] || FAILS.spring;
@@ -652,6 +654,7 @@
       else ui.next.classList.add('hidden');
       if (G.fails >= 2) show(ui.show);
       ui.spaceAction.textContent = 'retry';
+      hide(ui.rHint);
     }
     show(ui.result);
   }
@@ -764,6 +767,17 @@
       ui.spring.classList.toggle('warn', cls === 'warn');
       ui.spring.classList.toggle('danger', cls === 'danger');
     }
+    // Time-star flag: where the bar will be when the par time runs out.
+    var total = L.spring + Sim.popcount(s.winders) * L.winderBonus;
+    var parLeft = total - G.def.par;
+    var parPos = parLeft > 0 ? (Math.min(1, parLeft / G.springMax) * 100).toFixed(1) + '%' : '';
+    if (hudCache.par !== parPos) {
+      hudCache.par = parPos;
+      ui.par.style.display = parPos ? '' : 'none';
+      if (parPos) ui.par.style.left = parPos;
+    }
+    var missed = parLeft > 0 && left < parLeft - 1e-6;
+    if (hudCache.missed !== missed) { hudCache.missed = missed; ui.par.classList.toggle('missed', missed); }
     var nk = L.keys.length, got = Sim.popcount(s.keys);
     var flying = 0;
     for (var i = 0; i < parts.length; i++) if (parts[i].k === 'fly') flying++;
@@ -1242,7 +1256,8 @@
       e.preventDefault();
     } else if (k === 'Escape' || k === 'p' || k === 'P') {
       if (G.mode === 'play') {
-        if (G.phase === 'paused') resume();
+        if (!ui.result.classList.contains('hidden')) goLevels();
+        else if (G.phase === 'paused') resume();
         else if (G.demo) stopDemo();
         else pause();
       } else if (G.mode === 'levels') goTitle();

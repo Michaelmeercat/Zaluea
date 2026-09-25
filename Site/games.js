@@ -1,5 +1,6 @@
 var games = [
-    {name: "Flappy Bird", path: "games/flappybird/index.html"}
+    {name: "Flappy Bird", path: "games/flappybird/index.html"},
+    {name: "Wind-Up Escape", path: "games/windup-escape/index.html"}
 ];
 
 var glist = document.getElementById("gameslist");
@@ -38,6 +39,10 @@ function loadGame(path) {
     button_fullscreengame.style.display = 'initial';
     gameWindow.setAttribute('src', path);
     gameWindow.style.display = 'initial';
+    // Hand keyboard focus to the game so keys like Space reach it.
+    gameWindow.onload = function() {
+        gameWindow.focus();
+    };
 }
 
 function closeGame() {

@@ -187,6 +187,7 @@
   function scheduleMusic() {
     if (!ctx) return;
     var ahead = ctx.currentTime + 0.25;
+    if (!musicOn || ctx.state !== 'running') { musicNext = Math.max(musicNext, ahead); return; }
     var eighth = 0.25;
     while (musicNext < ahead) {
       var t = musicNext - ctx.currentTime;

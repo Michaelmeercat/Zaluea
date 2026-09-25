@@ -256,7 +256,17 @@ body.has-keys p.key-only { display: block; }
 #spring.danger #spring-fill { background: repeating-linear-gradient(-45deg, rgba(255, 255, 255, 0.25) 0 8px, rgba(255, 255, 255, 0) 8px 16px), linear-gradient(#ff8787, #f03e3e); }
 #spring.danger #spring-track { animation: pulse-red 0.5s ease-in-out infinite alternate; }
 #spring.boost #spring-fill { filter: brightness(1.35); }
-#spring-par { display: none; }
+#spring-par {
+  position: absolute;
+  top: 1px;
+  width: 18px;
+  height: 18px;
+  margin-left: -9px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 2.6l2.9 5.9 6.5.9-4.7 4.6 1.1 6.5L12 17.4l-5.8 3.1 1.1-6.5L2.6 9.4l6.5-.9z' fill='%23ffffff' stroke='%23c98a00' stroke-width='2' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-size: contain;
+  transition: opacity 0.3s, left 0.3s;
+}
+#spring-par.missed { opacity: 0.3; filter: grayscale(1); }
 #spring-text {
   min-width: 3.4em;
   text-align: right;
