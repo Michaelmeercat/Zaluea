@@ -1,0 +1,13 @@
+{
+  "name": "Wind-Up Escape",
+  "short_name": "Wind-Up",
+  "description": "Guide a tiny wind-up toy out of the toy box. One tap to turn!",
+  "start_url": "index.html",
+  "display": "fullscreen",
+  "orientation": "any",
+  "background_color": "#7fd3ff",
+  "theme_color": "#7fd3ff",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}

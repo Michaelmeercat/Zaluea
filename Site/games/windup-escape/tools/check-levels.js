@@ -69,6 +69,9 @@ LEVELS.forEach(function (def, idx) {
   var problems = [];
   if (!fast) problems.push('UNBEATABLE');
   if (!full) problems.push('cannot collect every key and escape');
+  // Fairness: every room must be clearable without double/triple taps.
+  if (full && !single) problems.push('needs multi-taps to collect every key');
+  if (!L.keys.length) problems.push('no gold keys');
   if (full && def.par < full.beats) problems.push('par ' + def.par + ' < best all-key time ' + full.beats);
   if (full && def.spring < full.beats && !(def.needsWinder || def.needsWinderForKeys || L.winders.length)) problems.push('spring too short');
   if (full) {

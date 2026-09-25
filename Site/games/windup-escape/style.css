@@ -24,6 +24,7 @@ html, body {
   margin: 0;
   height: 100%;
   overflow: hidden;
+  overscroll-behavior: none;
   background: #7fd3ff;
   font-family: var(--font);
   color: var(--ink);

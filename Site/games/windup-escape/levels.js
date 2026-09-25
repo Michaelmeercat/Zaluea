@@ -12,6 +12,7 @@
   var LEVELS = [
     {
       name: 'Wind Me Up', intro: 'turn', dir: 'right', spring: 30, par: 16,
+      tip: 'Beat the \u2605 on the spring bar to earn the time star.',
       marks: [[5, 1], [5, 5]],
       map: [
         '#######',
@@ -275,13 +276,14 @@
       ]
     },
     {
-      name: 'The Great Escape', dir: 'right', spring: 20, par: 33,
+      name: 'The Great Escape', dir: 'right', spring: 22, par: 31,
+      tip: 'Everything at once! Plan your route before you wind up.',
       marbles: [{ path: [[1, 5], [7, 5]] }, { path: [[7, 9], [1, 9]], offset: 4 }],
       map: [
         '#########',
-        '#Sccccw.#',
+        '#Scccc..#',
         '#oooocA.#',
-        '#k...c#.#',
+        '#kw..c#.#',
         '####.##.#',
         '#.......#',
         '#.##.##B#',

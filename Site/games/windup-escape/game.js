@@ -13,8 +13,8 @@
 
   var BEAT = 0.5;
   var GRACE = 0.34;
-  var BURST = 0.3;
-  var RETRO_MAX = 0.62;
+  var BURST = 0.2;
+  var RETRO_MAX = 0.97;
   var BONK_AT = 0.35;
   var TAU = Math.PI * 2;
 
@@ -101,6 +101,11 @@
 
   function isQuiet() { return G.mode !== 'play' || (G.demo && G.demo.attract); }
   function sfx(name, a) { if (!isQuiet()) Sound.sfx[name](a); }
+  // Short rumbles on phones that support it (Android); silent elsewhere.
+  function buzz(pattern) {
+    if (isQuiet() || !save.sound || !navigator.vibrate) return;
+    try { navigator.vibrate(pattern); } catch (e) { /* not allowed */ }
+  }
 
   // -------------------------------------------------------------- layout
   function resize() {
@@ -512,6 +517,7 @@
   function onBonk() {
     var ev = G.cur.res.ev;
     sfx('bonk');
+    buzz(18);
     vis.shake = Math.max(vis.shake, 0.12);
     vis.wobble = 1;
     var f = tileXY(ev.from);
@@ -525,6 +531,7 @@
 
   function onKey(tile) {
     sfx('key');
+    buzz(10);
     var q = tileXY(tile);
     burst(q.x + 0.5, q.y + 0.4, ['#ffe066', '#ffcc33', '#fff'], 14, 3);
     parts.push({ k: 'ring', x: q.x + 0.5, y: q.y + 0.5, life: 0.4, max: 0.4, c: '#ffcc33' });
@@ -587,6 +594,7 @@
     G.p = 1;
     ui.spring.classList.remove('running');
     sfx('win');
+    buzz([20, 60, 30]);
     var e = tileXY(G.cur.res.ev.to);
     confetti(e.x + 0.5, e.y + 0.5, isQuiet() ? 20 : 60);
   }
@@ -596,6 +604,7 @@
     G.cause = cause;
     G.endT = 0;
     ui.spring.classList.remove('running');
+    buzz(cause === 'spring' ? 30 : 70);
     if (cause === 'marble') {
       sfx('crash');
       vis.shake = 0.35;
@@ -1242,6 +1251,8 @@
     onTap();
   });
   app.addEventListener('contextmenu', function (e) { e.preventDefault(); });
+  // iOS only lets audio start from touchend/click, so unlock there as well.
+  document.addEventListener('touchend', function () { Sound.unlock(); }, { passive: true });
   document.addEventListener('dblclick', function (e) { e.preventDefault(); });
   document.addEventListener('gesturestart', function (e) { e.preventDefault(); });
 
@@ -1296,7 +1307,7 @@
   window.WGame = {
     state: function () { return { mode: G.mode, phase: G.phase, li: G.li, beat: G.s && G.s.b, pos: G.s && G.s.pos, p: G.p, queued: G.queued, keys: G.s && G.s.keys, stars: save.stars.slice() }; },
     startLevel: startLevel, tap: onTap, primary: primaryAction, retry: retry, goLevels: goLevels,
-    advance: function (dt) { update(dt); render(); },
+    advance: function (dt, skipRender) { update(dt); if (!skipRender) render(); },
     stopLoop: function () { looping = false; },
     solution: solutionFor
   };
