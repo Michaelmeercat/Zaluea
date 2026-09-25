@@ -148,6 +148,7 @@ body.has-keys p.key-only { display: block; }
   text-decoration: underline;
 }
 
+.text-btn[data-armed] { color: var(--red-d); font-weight: 700; text-decoration: none; }
 .toggle svg { width: 28px; height: 28px; }
 .toggle.off { opacity: 0.55; }
 

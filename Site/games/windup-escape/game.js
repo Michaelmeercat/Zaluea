@@ -1311,9 +1311,22 @@
   onClick('btn-retry', function () { Sound.sfx.ui(); retry(); });
   onClick('btn-next', function () { Sound.sfx.ui(); nextLevel(); });
   onClick('btn-show', function () { Sound.sfx.ui(); startDemo(); });
+  // Two taps to erase progress; embedded browsers often suppress confirm().
+  var resetTimer = null;
   onClick('btn-reset', function () {
-    if (window.confirm('Reset all stars and locked rooms?')) {
-      save.stars = []; save.best = []; writeSave(); buildLevelGrid();
+    var btn = $('btn-reset');
+    clearTimeout(resetTimer);
+    if (btn.getAttribute('data-armed')) {
+      save.stars = []; save.best = []; save.skin = 0; writeSave(); buildLevelGrid();
+      btn.removeAttribute('data-armed');
+      btn.textContent = 'Progress erased';
+      Sound.sfx.back();
+      resetTimer = setTimeout(function () { btn.textContent = 'Reset progress'; }, 2000);
+    } else {
+      btn.setAttribute('data-armed', '1');
+      btn.textContent = 'Tap again to erase all stars';
+      Sound.sfx.locked();
+      resetTimer = setTimeout(function () { btn.removeAttribute('data-armed'); btn.textContent = 'Reset progress'; }, 3000);
     }
   });
   function toggleSound() { save.sound = !save.sound; Sound.setSound(save.sound); writeSave(); refreshToggles(); Sound.sfx.ui(); }
