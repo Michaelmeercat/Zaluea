@@ -626,6 +626,10 @@ body.has-keys p.key-only { display: block; }
   .card h3 { font-size: 26px; }
   .big-star { width: 56px; height: 56px; }
 }
+/* Older browsers without aspect-ratio still get chunky room buttons. */
+@supports not (aspect-ratio: 1 / 1) {
+  .lvl { min-height: 72px; }
+}
 @media (prefers-reduced-motion: reduce) {
   .logo b, .go-line, #hint.pulse { animation: none; }
 }
