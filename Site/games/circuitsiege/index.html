@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta name="theme-color" content="#070a10">
+  <meta name="description" content="CIRCUIT SIEGE — defend the Core from corrupted programs in this strategic browser tower defense.">
+  <title>Circuit Siege</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpolygon points='32,4 58,18 58,46 32,60 6,46 6,18' fill='%23101722' stroke='%2339d0ff' stroke-width='4'/%3E%3Ccircle cx='32' cy='32' r='10' fill='%2339d0ff'/%3E%3C/svg%3E">
+</head>
+<body>
+  <div id="app">
+    <canvas id="menu-bg"></canvas>
+
+    <!-- Menus are rendered into #menu by menus.js -->
+    <div id="menu" class="screen active"></div>
+
+    <!-- Game screen -->
+    <div id="game" class="screen">
+      <div id="topbar">
+        <button class="tb-btn" id="btn-menu" title="Pause menu (Esc)">☰</button>
+        <div class="tb-map" id="tb-map">—</div>
+        <div class="tb-stat wave"><span class="lbl">WAVE</span><span id="tb-wave">0/60</span></div>
+        <div class="tb-stat credits" title="Credits"><span class="ico">¢</span><span id="tb-credits">0</span></div>
+        <div class="tb-stat core" title="Core integrity"><span class="ico">⬢</span><span id="tb-core">150</span><div class="core-bar"><div id="tb-core-bar"></div></div></div>
+        <div class="tb-spacer"></div>
+        <div class="tb-mods" id="tb-mods"></div>
+        <div class="tb-speed">
+          <button class="tb-btn" id="btn-pause" title="Pause (P)">❚❚</button>
+          <button class="tb-btn spd" data-speed="1" title="Normal speed">1×</button>
+          <button class="tb-btn spd" data-speed="2" title="Fast (F)">2×</button>
+          <button class="tb-btn spd" data-speed="3" title="Faster (F)">3×</button>
+        </div>
+        <div class="tb-fps" id="tb-fps"></div>
+      </div>
+      <div id="game-main">
+        <div id="stage">
+          <canvas id="cv"></canvas>
+          <div id="stage-ui">
+            <div id="boss-bar" class="hidden"><div class="bb-name" id="bb-name">BOSS</div><div class="bb-track"><div class="bb-fill" id="bb-fill"></div><div class="bb-shield" id="bb-shield"></div></div></div>
+            <div id="banner" class="hidden"></div>
+            <div id="event-banner" class="hidden"></div>
+            <div id="enemy-card" class="hidden"></div>
+            <div id="tip" class="hidden"></div>
+            <div id="intro-card" class="hidden"></div>
+            <div id="hint-bar"></div>
+          </div>
+        </div>
+        <div id="sidebar">
+          <div id="shop-view">
+            <div class="side-title">BUILD <span class="side-sub">1-6</span></div>
+            <div id="shop"></div>
+            <div class="side-title">ABILITIES <span class="side-sub">Q W E R T Y</span></div>
+            <div id="abilities"><div class="ab-empty">Tier-5 upgrades unlock abilities.</div></div>
+          </div>
+          <div id="inspect-view" class="hidden"></div>
+          <div id="wave-box">
+            <div id="next-wave"></div>
+            <button id="btn-start" class="big-btn">▶ START WAVE</button>
+            <label class="auto-toggle"><input type="checkbox" id="chk-auto"> Auto-start waves</label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="modal-root"></div>
+    <div id="toast-root"></div>
+    <div id="rotate-hint">Rotate your device or widen the window to play.</div>
+  </div>
+
+  <script src="js/util.js"></script>
+  <script src="js/data/towers.js"></script>
+  <script src="js/data/enemies.js"></script>
+  <script src="js/data/maps.js"></script>
+  <script src="js/data/waves.js"></script>
+  <script src="js/data/progression.js"></script>
+  <script src="js/save.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/game/fx.js"></script>
+  <script src="js/game/match.js"></script>
+  <script src="js/render/sprites.js"></script>
+  <script src="js/render/mapart.js"></script>
+  <script src="js/render/render.js"></script>
+  <script src="js/ui/ui.js"></script>
+  <script src="js/ui/hud.js"></script>
+  <script src="js/ui/tutorial.js"></script>
+  <script src="js/ui/menus.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
