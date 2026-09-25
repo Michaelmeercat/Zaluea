@@ -65,7 +65,13 @@
       <!-- Shown only if the game script never starts (e.g. a file preview with JavaScript off). -->
       <div id="boot-msg" role="alert">
         <strong>The game can't start in this window</strong>
-        <span>JavaScript isn't running here. If you opened the file in a preview (the Claude app, Google Drive, email), download it instead, then double-click it in the Files app so it opens in Chrome.</span>
+        <span>This window is a preview with JavaScript turned off, so the game can't run here. On a Chromebook:</span>
+        <ol>
+          <li>Download the file. Don't open it from the Claude chat, Google Drive, email, or the Files app's Space-bar preview.</li>
+          <li>Open the <b>Files</b> app, go to <b>Downloads</b> and double-click <b>Wind-Up-Escape.html</b> (or right-click it, then <b>Open with</b> &rarr; <b>Chrome</b>).</li>
+          <li>It should open in a normal Chrome tab whose address starts with <b>file:///</b></li>
+        </ol>
+        <span class="small">Still seeing this in a Chrome tab whose address starts with file:///? Then your school has blocked JavaScript for downloaded files.</span>
         <code id="boot-err"></code>
       </div>
     </section>

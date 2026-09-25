@@ -633,8 +633,10 @@ body:not(.booted) #title-toy { display: none; }
   line-height: 1.35;
   box-shadow: 0 6px 0 var(--card-edge), 0 14px 28px rgba(40, 20, 70, 0.3);
   opacity: 0;
-  animation: fade-in 0.4s ease 1.2s forwards;
+  animation: fade-in 0.4s ease 2.5s forwards;
 }
+#boot-msg ol { margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 4px; }
+#boot-msg .small { font-size: 14px; color: var(--ink-soft); }
 #boot-msg strong { font-size: 19px; color: var(--red-d); }
 #boot-err:not(.shown) { display: none; }
 #boot-err, #run-err { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 13px; white-space: pre-wrap; word-break: break-word; }
