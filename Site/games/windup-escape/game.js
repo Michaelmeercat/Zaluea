@@ -958,7 +958,7 @@
       var mp = frozenP;
       var mx = lerp(a.x, c.x, mp), my = lerp(a.y, c.y, mp);
       var roll = (b + mp) * 2.2 * (c.x - a.x + c.y - a.y);
-      list.push({ key: my + 1.02, marble: mi, x: mx, y: my, roll: roll, col: m.color });
+      list.push({ key: my + 1.02, marble: mi, x: mx, y: my, roll: roll, col: m.color, dx: c.x - a.x, dy: c.y - a.y });
     });
     // toy
     var toy = toyState();
@@ -973,15 +973,31 @@
         var q = tileXY(e.piston);
         var col = C.piston[L.pistonGroup[e.piston]];
         var hh = e.h;
+        var jig = 0;
+        if (started() && G.p > 0.45 && Sim.pistonUp(L, L.pistonGroup[e.piston], b + 1) && !Sim.pistonUp(L, L.pistonGroup[e.piston], b + 2)) {
+          jig = Math.sin(G.time * 55) * T * 0.025;   // about to sink
+        }
+        ctx.save();
+        ctx.translate(jig, 0);
         Draw.block(ctx, px(q.x), py(q.y), T, col, view.d * hh, null);
         ctx.fillStyle = 'rgba(255,255,255,0.85)';
         Draw.pistonEmblem(ctx, px(q.x + 0.5), py(q.y + 0.5) - view.d * hh, T, L.pistonGroup[e.piston]);
         ctx.fill();
+        ctx.restore();
       } else if (e.item === 'key') {
         Draw.goldKey(ctx, px(e.x + 0.5), py(e.y + 0.5), T, t + e.x * 0.7);
       } else if (e.item === 'winder') {
         Draw.winder(ctx, px(e.x + 0.5), py(e.y + 0.5), T, t + e.y * 0.5);
       } else if (e.marble !== undefined) {
+        // faint trail shows which way the marble is rolling
+        var mc = C.marbles[e.col % C.marbles.length][0];
+        ctx.fillStyle = mc;
+        for (var g = 1; g <= 2; g++) {
+          ctx.globalAlpha = 0.28 / g;
+          Draw.ellipse(ctx, px(e.x + 0.5 - e.dx * 0.28 * g), py(e.y + 0.5 - e.dy * 0.28 * g), T * (0.26 - g * 0.05), T * (0.26 - g * 0.05));
+          ctx.fill();
+        }
+        ctx.globalAlpha = 1;
         Draw.marble(ctx, px(e.x + 0.5), py(e.y + 0.5) - T * 0.02, T, e.col, e.roll);
       } else if (e.toy) {
         drawToy(e.toy);
