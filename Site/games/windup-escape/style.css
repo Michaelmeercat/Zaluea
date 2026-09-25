@@ -42,7 +42,7 @@ html, body {
   -webkit-tap-highlight-color: transparent;
 }
 
-#board {
+#bg, #board {
   position: absolute;
   inset: 0;
   width: 100%;

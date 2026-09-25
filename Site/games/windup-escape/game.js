@@ -54,7 +54,8 @@
   var app = $('app');
   var canvas = $('board');
   var ctx = canvas.getContext('2d');
-  var staticCanvas = document.createElement('canvas');
+  // Static art (wallpaper, floor, holes) lives on its own layer underneath.
+  var staticCanvas = $('bg');
   var sctx = staticCanvas.getContext('2d');
   var ui = {
     hud: $('hud'), num: $('hud-num'), name: $('hud-name'), keys: $('hud-keys'), keysText: $('hud-keys-text'),
@@ -120,6 +121,12 @@
     view.w = w; view.h = h; view.dpr = dpr;
     canvas.width = Math.round(w * dpr);
     canvas.height = Math.round(h * dpr);
+    if (!G.L) {
+      staticCanvas.width = canvas.width;
+      staticCanvas.height = canvas.height;
+      sctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      Draw.wallpaper(sctx, w, h);
+    }
     layoutBoard();
   }
 
@@ -810,20 +817,23 @@
   }
 
   // ------------------------------------------------------------ rendering
+  var bgShaken = false;
   function render() {
     var dpr = view.dpr;
     ctx.setTransform(1, 0, 0, 1, 0, 0);
-    if (!G.L) {
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      Draw.wallpaper(ctx, view.w, view.h);
-      return;
-    }
-    ctx.drawImage(staticCanvas, 0, 0);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if (!G.L) return;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.save();
     if (vis.shake > 0.005) {
       var a = vis.shake * view.T * 0.25;
-      ctx.translate((Math.random() - 0.5) * a, (Math.random() - 0.5) * a);
+      var sx = (Math.random() - 0.5) * a, sy = (Math.random() - 0.5) * a;
+      ctx.translate(sx, sy);
+      staticCanvas.style.transform = 'translate(' + sx.toFixed(1) + 'px,' + sy.toFixed(1) + 'px)';
+      bgShaken = true;
+    } else if (bgShaken) {
+      staticCanvas.style.transform = '';
+      bgShaken = false;
     }
     drawFlats();
     drawSorted();
@@ -1349,14 +1359,16 @@
   window.addEventListener('orientationchange', function () { setTimeout(resize, 200); });
 
   // ---------------------------------------------------------- main loop
-  var last = 0, looping = true;
+  var last = 0, looping = true, menuSkip = false;
   function frame(ts) {
     if (!looping) return;
     var dt = last ? Math.min(0.05, (ts - last) / 1000) : 0.016;
     last = ts;
     update(dt);
     drawTitleToy(dt);
-    render();
+    // Menus sit on a blurred backdrop; redraw it at half rate to spare phones.
+    menuSkip = G.mode === 'play' ? false : !menuSkip;
+    if (!menuSkip) render();
     window.requestAnimationFrame(frame);
   }
 
