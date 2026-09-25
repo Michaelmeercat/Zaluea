@@ -444,7 +444,7 @@
         <div class="set-row"><label>Sound effects</label>${sl('sfx')}</div>
       </div><div class="panel"><h3>SAVE DATA</h3>
         <div style="font-size:14px;color:var(--muted);margin-bottom:8px">Progress is saved in this browser. Export a save code or file to keep a backup or move to another device.</div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn small" data-save="export">Show Save Code</button><button class="btn small" data-save="copy">Copy Code</button><button class="btn small" data-save="download">Download File</button></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn small" data-save="export">Show Save Code</button><button class="btn small" data-save="copy">Copy Code</button>${window.CS_EMBEDDED ? '' : '<button class="btn small" data-save="download">Download File</button>'}</div>
         <textarea class="code" id="save-code" readonly placeholder="Your save code appears here"></textarea>
         <div class="sec-label">IMPORT</div>
         <textarea class="code" id="import-code" placeholder="Paste a save code here"></textarea>
@@ -478,7 +478,7 @@
       root.querySelectorAll('[data-save]').forEach((b) => (b.onclick = () => {
         const a = b.dataset.save;
         if (a === 'export') { code.value = S.exportCode(); code.select(); }
-        if (a === 'copy') { code.value = S.exportCode(); code.select(); try { navigator.clipboard.writeText(code.value).then(() => UI.toast('SAVE', 'Save code copied to clipboard.')); } catch (e) { document.execCommand && document.execCommand('copy'); UI.toast('SAVE', 'Save code selected — press Ctrl+C.'); } }
+        if (a === 'copy') { code.value = S.exportCode(); code.select(); const fail = () => { code.select(); UI.toast('SAVE', 'Code selected. Copy it with Ctrl+C or long-press → Copy.'); }; try { navigator.clipboard.writeText(code.value).then(() => UI.toast('SAVE', 'Save code copied to clipboard.'), fail); } catch (e) { fail(); } }
         if (a === 'download') { S.downloadFile(); UI.toast('SAVE', 'Save file downloaded.'); }
         if (a === 'import') {
           const v = root.querySelector('#import-code').value;

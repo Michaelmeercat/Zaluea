@@ -63,7 +63,7 @@
 
   let saveTimer = null;
   S.save = function (now) {
-    if (typeof localStorage === 'undefined') return;
+    try { if (typeof localStorage === 'undefined') return; } catch (e) { S.storageOk = false; return; }
     const doSave = () => {
       saveTimer = null;
       try { localStorage.setItem(KEY, JSON.stringify(S.data)); S.storageOk = true; }

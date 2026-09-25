@@ -31,6 +31,14 @@
       $('#btn-start').onclick = () => this.startWave();
       $('#btn-pause').onclick = () => this.togglePause();
       $('#btn-menu').onclick = () => this.openPauseMenu();
+      const fs = $('#btn-fs');
+      if (fs) {
+        if (!document.fullscreenEnabled) fs.style.display = 'none';
+        fs.onclick = () => {
+          const p = document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen({ navigationUI: 'hide' });
+          if (p && p.catch) p.catch(() => this.hint('Fullscreen is not available here', 1.5));
+        };
+      }
       document.querySelectorAll('.tb-btn.spd').forEach((b) => (b.onclick = () => this.setSpeed(+b.dataset.speed)));
       $('#chk-auto').onchange = (e) => { if (this.m) this.m.autoStart = e.target.checked; S.data.settings.autoStart = e.target.checked; S.save(); };
       UI.wireSounds($('#game'));
@@ -89,8 +97,9 @@
         const b = U.el('button', 'shop-item');
         b.innerHTML = `<span class="si-key">${i + 1}</span><img src="${CS.Spr.towerIcon(type, [0, 0, 0], S.skinOf(type), 64)}" alt=""><div class="si-name">${def.name}</div><div class="si-cost">¢<span>${this.m.placeCost(type)}</span></div>`;
         b.onclick = () => this.selectShop(type);
-        b.onmouseenter = () => this.showTip(type, b);
-        b.onmouseleave = () => this.hideTip();
+        b.onpointerenter = (e) => { if (e.pointerType === 'mouse') this.showTip(type, b); };
+        b.onpointerleave = () => this.hideTip();
+        b.addEventListener('pointerdown', () => this.hideTip());
         b.dataset.type = type;
         shop.appendChild(b);
         this.shopEls.push({ el: b, type, costEl: b.querySelector('.si-cost span') });
