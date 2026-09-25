@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#7fd3ff">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="description" content="Guide a tiny wind-up toy out of the toy box. One tap to turn!">
+  <title>Wind-Up Escape</title>
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&display=swap">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app">
+    <canvas id="board" aria-label="Game board"></canvas>
+
+    <!-- In-game heads-up display -->
+    <div id="hud" class="hidden">
+      <div class="hud-row">
+        <button id="btn-pause" class="icon-btn" aria-label="Pause">
+          <svg viewBox="0 0 24 24"><rect x="6" y="5" width="4" height="14" rx="1.5"/><rect x="14" y="5" width="4" height="14" rx="1.5"/></svg>
+        </button>
+        <div id="hud-title"><span id="hud-num">1</span><span id="hud-name">Wind Me Up</span></div>
+        <div id="hud-keys" class="pill"><span class="key-ico"></span><span id="hud-keys-text">0/1</span></div>
+      </div>
+      <div id="spring" aria-label="Wind-up spring">
+        <div id="spring-ico"></div>
+        <div id="spring-track"><div id="spring-fill"></div><div id="spring-par"></div></div>
+        <div id="spring-text">15.0</div>
+      </div>
+    </div>
+    <div id="hint" class="hidden"></div>
+    <div id="demo-badge" class="hidden">Watch how it's done&hellip; <small>tap to stop</small></div>
+
+    <!-- Title -->
+    <section id="screen-title" class="screen">
+      <div class="title-wrap">
+        <canvas id="title-toy" width="220" height="220"></canvas>
+        <h1 class="logo" aria-label="Wind-Up Escape">
+          <span class="logo-line"><b style="--c:#ff6b6b">W</b><b style="--c:#ffa94d">i</b><b style="--c:#ffd43b">n</b><b style="--c:#51cf66">d</b><b style="--c:#ffffff">-</b><b style="--c:#4dabf7">U</b><b style="--c:#b197fc">p</b></span>
+          <span class="logo-line"><b style="--c:#ff922b">E</b><b style="--c:#ff6b9d">s</b><b style="--c:#38d9a9">c</b><b style="--c:#748ffc">a</b><b style="--c:#ffd43b">p</b><b style="--c:#ff6b6b">e</b></span>
+        </h1>
+        <p class="tagline">One tap to turn. Get out of the toy box!</p>
+        <button id="btn-play" class="big-btn btn-green">Play</button>
+        <div class="toggles">
+          <button id="btn-sound" class="icon-btn toggle" aria-label="Sound effects"></button>
+          <button id="btn-music" class="icon-btn toggle" aria-label="Music"></button>
+        </div>
+        <p class="controls-note"><span class="touch-only">Tap anywhere</span><span class="key-only">Press <kbd>Space</kbd></span> to turn right</p>
+      </div>
+    </section>
+
+    <!-- Level select -->
+    <section id="screen-levels" class="screen hidden">
+      <div class="levels-head">
+        <button id="btn-levels-back" class="icon-btn" aria-label="Back">
+          <svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7" fill="none" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <h2>Pick a Room</h2>
+        <div class="pill star-pill"><span class="star-ico"></span><span id="total-stars">0/60</span></div>
+      </div>
+      <div id="level-grid"></div>
+      <div class="levels-foot">
+        <button id="btn-reset" class="text-btn">Reset progress</button>
+      </div>
+    </section>
+
+    <!-- Level start card -->
+    <div id="card-start" class="card hidden">
+      <div class="card-kicker">Room <span id="start-num">1</span></div>
+      <h3 id="start-name">Wind Me Up</h3>
+      <div id="start-intro" class="intro hidden">
+        <canvas id="intro-ico" width="96" height="96"></canvas>
+        <p id="intro-text"></p>
+      </div>
+      <p id="start-tip" class="tip hidden"></p>
+      <ul class="goals">
+        <li><span class="star-ico"></span>Escape</li>
+        <li><span class="star-ico"></span><span id="goal-keys">Grab every key</span></li>
+        <li><span class="star-ico"></span><span id="goal-time">Escape within 8.0s</span></li>
+      </ul>
+      <div class="go-line"><span class="touch-only">Tap</span><span class="key-only">Press <kbd>Space</kbd></span> to wind up!</div>
+    </div>
+
+    <!-- Result card -->
+    <div id="card-result" class="card hidden">
+      <h3 id="result-title">Escaped!</h3>
+      <div id="result-stars" class="stars-big">
+        <span class="big-star"></span><span class="big-star"></span><span class="big-star"></span>
+      </div>
+      <p id="result-sub"></p>
+      <ul id="result-goals" class="goals small"></ul>
+      <div class="btn-row">
+        <button id="btn-levels" class="round-btn btn-blue" aria-label="Level select">
+          <svg viewBox="0 0 24 24"><rect x="4" y="4" width="6.5" height="6.5" rx="1.6"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.6"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.6"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.6"/></svg>
+        </button>
+        <button id="btn-retry" class="round-btn btn-yellow" aria-label="Retry">
+          <svg viewBox="0 0 24 24"><path d="M19 12a7 7 0 1 1-2.05-4.95" fill="none" stroke-width="3" stroke-linecap="round"/><path d="M19.5 3.5v5h-5" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <button id="btn-next" class="round-btn btn-green" aria-label="Next room">
+          <svg viewBox="0 0 24 24"><path d="M8 5l9 7-9 7z"/></svg>
+        </button>
+        <button id="btn-show" class="pill-btn btn-purple hidden">Show me how</button>
+      </div>
+      <p class="key-hint key-only"><kbd>Space</kbd> <span id="space-action">next</span> &middot; <kbd>R</kbd> retry</p>
+    </div>
+
+    <!-- Pause -->
+    <div id="card-pause" class="card hidden">
+      <h3>Paused</h3>
+      <div class="pause-list">
+        <button id="btn-resume" class="big-btn btn-green">Resume</button>
+        <button id="btn-restart" class="big-btn btn-yellow">Restart</button>
+        <button id="btn-quit" class="big-btn btn-blue">Rooms</button>
+      </div>
+      <div class="toggles">
+        <button id="btn-sound2" class="icon-btn toggle" aria-label="Sound effects"></button>
+        <button id="btn-music2" class="icon-btn toggle" aria-label="Music"></button>
+      </div>
+    </div>
+
+    <div id="toast" class="hidden"></div>
+  </div>
+
+  <script src="sim.js"></script>
+  <script src="solver.js"></script>
+  <script src="levels.js"></script>
+  <script src="audio.js"></script>
+  <script src="draw.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>
