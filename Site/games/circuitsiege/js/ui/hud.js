@@ -88,12 +88,38 @@
         const def = CS.TOWERS[type];
         const b = U.el('button', 'shop-item');
         b.innerHTML = `<span class="si-key">${i + 1}</span><img src="${CS.Spr.towerIcon(type, [0, 0, 0], S.skinOf(type), 64)}" alt=""><div class="si-name">${def.name}</div><div class="si-cost">¢<span>${this.m.placeCost(type)}</span></div>`;
-        b.title = def.name + ' — ' + def.role + '\n' + def.desc;
         b.onclick = () => this.selectShop(type);
+        b.onmouseenter = () => this.showTip(type, b);
+        b.onmouseleave = () => this.hideTip();
         b.dataset.type = type;
         shop.appendChild(b);
         this.shopEls.push({ el: b, type, costEl: b.querySelector('.si-cost span') });
       });
+    }
+
+    showTip(type, anchor) {
+      let tip = document.getElementById('shop-tip');
+      if (!tip) { tip = U.el('div', ''); tip.id = 'shop-tip'; document.getElementById('app').appendChild(tip); }
+      const def = CS.TOWERS[type];
+      const s = CS.buildStats(type, [0, 0, 0]);
+      const rows = [];
+      if (def.kind === 'farm') rows.push(['Income', '¢' + s.income + ' per wave']);
+      else if (def.kind === 'amp') rows.push(['Buff', '+' + Math.round(s.buffRate * 100) + '% attack speed'], ['Radius', s.range]);
+      else if (def.kind === 'aura') rows.push(['Slow', Math.round(s.auraSlow * 100) + '% in field'], ['Field', s.range]);
+      else if (def.kind === 'drones') rows.push(['Drones', s.drones + ' × ' + s.droneDmg + ' dmg'], ['Leash', s.range]);
+      else rows.push(['Damage', s.dmg + (s.count > 1 ? ' ×' + s.count : '') + ' ' + ({ phys: 'physical', energy: 'energy', explosive: 'explosive', toxic: 'toxic' }[s.type] || '')], ['Speed', s.rate + '/s'], ['Range', s.range]);
+      const det = CS.detectInfo(type);
+      rows.push(['Stealth detect', det]);
+      tip.innerHTML = `<div class="st-n">${def.name} <span>¢${this.m ? U.fmt(this.m.placeCost(type)) : def.cost}</span></div><div class="st-r">${def.role}</div><div class="st-d">${U.esc(def.desc)}</div>${rows.map(([k, v]) => `<div class="st-row"><span>${k}</span><b>${v}</b></div>`).join('')}`;
+      const r = anchor.getBoundingClientRect();
+      tip.style.display = 'block';
+      tip.style.top = Math.min(window.innerHeight - tip.offsetHeight - 8, r.top) + 'px';
+      tip.style.left = (r.left - tip.offsetWidth - 10) + 'px';
+    }
+    hideTip() { const t = document.getElementById('shop-tip'); if (t) t.style.display = 'none'; }
+
+    anyDetection() {
+      return this.m.towers.some((t) => t.s.detect || t.s.auraReveal || t.s.buffDetect);
     }
 
     selectShop(type) {
@@ -336,7 +362,7 @@
       else if (def.kind === 'drones') { row('Drones', s.drones + (s.gunships ? '+' + s.gunships : '')); row('Drone dmg', Math.round(s.droneDmg)); row('Leash', s.globalLeash ? 'Map' : Math.round(s.range)); row('Detect', s.detect ? 'Yes' : 'No'); row('Total dmg', '<span data-l="dmg">' + U.fmt(t.dmgDealt) + '</span>'); row('Destroyed', '<span data-l="kills">' + t.kills + '</span>'); }
       else {
         const dmg = def.kind === 'virus' ? Math.round(s.virusDps) + '/s' : Math.round(s.dmg) + (s.count > 1 ? '×' + s.count : '');
-        row('Damage', dmg); row('Speed', s.rate.toFixed(2) + '/s'); row('Range', s.range > 1500 ? 'Map' : Math.round(s.range)); row('Detect', s.detect ? 'Yes' : 'No');
+        row('Damage', dmg); row('Speed', s.rate.toFixed(2) + '/s'); row('Range', s.range > 1500 ? 'Map' : Math.round(s.range)); row('Detect', s.detect ? '<span style="color:var(--green)">Yes</span>' : '<span style="color:#ff8fa3" title="' + CS.detectInfo(t.type) + '">No</span>');
         row('Total dmg', '<span data-l="dmg">' + U.fmt(t.dmgDealt) + '</span>'); row('Destroyed', '<span data-l="kills">' + t.kills + '</span>');
       }
       let budget = '<div class="budget">BUILD ';
@@ -360,16 +386,18 @@
         const cost = m.upgradeCost(t, p);
         const label = st.can ? '¢' + U.fmt(cost) : st.poor ? '¢' + U.fmt(cost) : st.locked ? '🔒 Mastery 3' : st.blocked ? '✕ ' + st.why : st.why;
         ups += `<div class="upg ${PATH_CLS[p]} ${tier === 4 ? 't5' : ''}"><div class="up-top"><span class="up-path">${path.name}</span><span class="up-tiers">${tiersHtml}</span></div>
-          <div class="up-name">${U.esc(up.n)}</div><div class="up-desc">${U.esc(up.d)}</div><span class="up-key">${UP_KEYS[p]}</span>
+          <div class="up-name">${U.esc(up.n)}</div><div class="up-desc">${U.esc(up.d)}${st.locked ? '<br><span style="color:var(--gold)">Use this tower in matches to earn Mastery — tier 5 unlocks at Mastery 3 (now ' + mas.lvl + ').</span>' : ''}</div><span class="up-key">${UP_KEYS[p]}</span>
           <button class="up-buy ${st.poor ? 'poor' : ''}" data-p="${p}" ${st.can ? '' : 'disabled'}>${label}</button></div>`;
       }
       let tg = '';
       if (tlist.length) tg = `<div class="targeting"><span class="tg-l">TARGET</span><button data-tg="-1">◀</button><span class="tg-v">${CS.TARGET_NAMES[t.targeting]}</span><button data-tg="1">▶</button></div>`;
-      iv.innerHTML = `<div class="ins-head"><img src="${CS.Spr.towerIcon(t.type, t.tiers, S.skinOf(t.type), 64)}" alt=""><div><div class="ins-name">${def.name}</div><div class="ins-sub">${def.role} · Mastery ${mas.lvl}</div></div><button class="ins-close" title="Close (Esc)">✕</button></div>
+      const strip = '<div class="build-strip">' + m.loadout.map((ty, i) => `<button data-build="${ty}" title="Build ${CS.TOWERS[ty].name} (${i + 1})"><img src="${CS.Spr.towerIcon(ty, [0, 0, 0], S.skinOf(ty), 64)}" alt=""></button>`).join('') + '</div>';
+      iv.innerHTML = strip + `<div class="ins-head"><img src="${CS.Spr.towerIcon(t.type, t.tiers, S.skinOf(t.type), 64)}" alt=""><div><div class="ins-name">${def.name}</div><div class="ins-sub">${def.role} · Mastery ${mas.lvl}</div></div><button class="ins-close" title="Close (Esc)">✕</button></div>
         ${t.offline ? '<div class="chip red" style="margin-top:6px">OFFLINE — disrupted</div>' : ''}
         <div class="ins-stats">${statRows}</div>${tg}${budget}${ups}
         <button class="btn danger small sell-btn" data-sell>Sell ¢${U.fmt(m.sellValue(t))} <span style="opacity:.6;font-size:11px">(Del)</span></button>`;
       iv.querySelector('.ins-close').onclick = () => this.select(null);
+      iv.querySelectorAll('[data-build]').forEach((b) => (b.onclick = () => this.selectShop(b.dataset.build)));
       iv.querySelectorAll('.up-buy').forEach((b) => (b.onclick = () => this.buyUpgrade(t, +b.dataset.p)));
       iv.querySelectorAll('[data-tg]').forEach((b) => (b.onclick = () => this.cycleTargeting(t, +b.dataset.tg)));
       iv.querySelector('[data-sell]').onclick = () => this.sell(t);
@@ -395,6 +423,7 @@
         this.abilityOrder = ids;
         if (!ids.length) { box.innerHTML = '<div class="ab-empty">Tier-5 upgrades unlock abilities.</div>'; this.abEls = []; return; }
         box.innerHTML = '';
+        this.abPrimed = false;
         this.abEls = ids.map((id, i) => {
           const a = CS.ABILITIES[id];
           const b = U.el('button', 'ab-btn');
@@ -406,12 +435,16 @@
           return { id, b, cd: b.querySelector('.ab-cd'), sec: b.querySelector('.ab-sec') };
         });
       }
+      this.abPrimed = true;
       for (const a of this.abEls || []) {
         const st = m.abilities[a.id];
         const f = Math.max(0, st.cd / st.max);
         a.cd.style.height = (f * 100).toFixed(1) + '%';
         a.sec.textContent = st.cd > 0 ? Math.ceil(st.cd) + 's' : '';
-        a.b.classList.toggle('ready', st.cd <= 0 && !m.rules.noAbilities);
+        const ready = st.cd <= 0 && !m.rules.noAbilities;
+        if (ready && !a.wasReady && this.abPrimed) { CS.sfx('achievement', 0.5); this.hint(CS.ABILITIES[a.id].name + ' ready — press ' + AB_KEYS[this.abilityOrder.indexOf(a.id)], 2); }
+        a.wasReady = ready;
+        a.b.classList.toggle('ready', ready);
       }
     }
 
@@ -421,7 +454,7 @@
       const el = $('#next-wave');
       const w = m.wave + 1;
       if (m.state === 'victory' || (!m.endless && w > m.maxWave)) { el.innerHTML = '<span>Final wave in progress</span>'; return; }
-      const groups = m.tutorial ? CS.getTutorialWave(w) : CS.getWave(w, m.seed, m.endless || w > 100);
+      const groups = m.tutorial && w < CS.TUTORIAL_WAVES.length ? CS.getTutorialWave(w) : CS.getWave(w, m.seed, m.endless || w > 100);
       const agg = {};
       for (const g of groups) agg[g.type] = (agg[g.type] || 0) + g.count;
       let html = '<span style="margin-right:4px">NEXT:</span>';
@@ -533,6 +566,15 @@
       c.onclick = () => c.classList.add('hidden');
     }
 
+    showBossIntro(e) {
+      const c = $('#intro-card');
+      c.innerHTML = `<img src="${CS.Spr.enemyIcon(e.type, 48)}" alt=""><div><div class="ic-h">BOSS · ${U.esc(e.def.name)}</div><div class="ic-t">${e.def.traits.map(U.esc).join(' ')}</div><div class="ic-t" style="color:#ffb3c1;margin-top:3px">HP ${U.fmt(e.maxHp)}${e.armor ? ' · Armor ' + e.armor : ''}</div></div>`;
+      c.classList.remove('hidden');
+      clearTimeout(this.introTimer);
+      this.introTimer = setTimeout(() => c.classList.add('hidden'), 9000);
+      c.onclick = () => c.classList.add('hidden');
+    }
+
     // ───────────────────────── match events
     onEvent(type, d) {
       const m = this.m;
@@ -542,6 +584,10 @@
             this.banner('⚠ WARNING ⚠', d.boss.join(' + ') + ' APPROACHING', 'boss', 3);
           } else this.banner('WAVE ' + d.wave, m.endless ? 'ENDLESS' : d.wave === m.maxWave ? 'FINAL WAVE' : '', '', 1.8);
           this.app.updateMusic();
+          const groups = m.tutorial && d.wave < CS.TUTORIAL_WAVES.length ? CS.getTutorialWave(d.wave) : CS.getWave(d.wave, m.seed, m.endless || d.wave > 100);
+          if (groups.some((g) => g.type === 'ghost' || g.type === 'blackout') && !this.anyDetection()) {
+            UI.toast('STEALTH ALERT', 'Ghost Processes incoming and <b>none of your towers can detect them</b>! Upgrade for detection (hover a tower in the build menu to see how).', 'warn', 6);
+          }
           for (const t of d.newTypes) {
             if (!S.data.seenEnemies[t] && CS.ENEMY_INTRO[t]) { S.data.seenEnemies[t] = true; S.save(); this.showIntro(t); break; }
           }
@@ -554,6 +600,7 @@
           break;
         case 'boss':
           this.app.updateMusic();
+          if (d.type !== 'wormseg') this.showBossIntro(d);
           break;
         case 'bossKilled':
           this.banner(d.def.name + ' DESTROYED', '', 'good', 2);

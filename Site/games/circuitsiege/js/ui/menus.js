@@ -14,6 +14,19 @@
     if (!thumbCache[id]) thumbCache[id] = CS.MapArt.thumbnail(CS.MAP_BY_ID[id], 480, 270).toDataURL('image/jpeg', 0.85);
     return thumbCache[id];
   }
+  // Non-blocking thumbnails: render one per frame and fill <img data-thumb>
+  function fillThumbs(root) {
+    const imgs = Array.from(root.querySelectorAll('img[data-thumb]'));
+    let i = 0;
+    const step = () => {
+      if (i >= imgs.length) return;
+      const im = imgs[i++];
+      if (document.body.contains(im)) im.src = mapThumb(im.dataset.thumb);
+      requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  }
+  const BLANK = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
   const diffLetter = { casual: 'C', standard: 'S', advanced: 'A', nightmare: 'N' };
 
   class Menus {
@@ -98,7 +111,7 @@
         const rec = S.data.maps[m.id] || {};
         const medals = CS.DIFF_ORDER.map((df) => `<span class="medal ${df} ${rec.done && rec.done[df] ? 'done' : ''}" title="${CS.DIFFICULTIES[df].name}">${diffLetter[df]}</span>`).join('');
         html += `<div class="map-card ${unlocked ? '' : 'locked'}" data-map="${m.id}">
-          <img class="thumb" src="${mapThumb(m.id)}" alt="">
+          <img class="thumb" src="${thumbCache[m.id] || BLANK}" ${thumbCache[m.id] ? '' : 'data-thumb="' + m.id + '"'} alt="">
           ${unlocked ? '' : `<div class="lock-over"><div><span class="lk">🔒</span>Level ${m.unlockLevel}${S.mapIndex(m.id) > 0 && S.mapIndex(m.id) < 6 ? '<br><span style="font-size:13px;font-weight:600">or beat ' + esc(CS.MAPS[S.mapIndex(m.id) - 1].name) + '</span>' : ''}</div></div>`}
           <div class="mc-body"><div class="mc-name"><span>${esc(m.name)}</span>${UI.stars(m.stars)}</div>
           <div class="mc-desc">${esc(m.desc)}</div>
@@ -106,7 +119,8 @@
         </div>`;
       }
       html += '</div>';
-      this.page('SELECT MAP', html, 'main');
+      const pgEl = this.page('SELECT MAP', html, 'main');
+      fillThumbs(pgEl);
       this.root.querySelectorAll('.map-card').forEach((c) => (c.onclick = () => {
         const id = c.dataset.map;
         if (!S.isMapUnlocked(id)) { CS.sfx('error'); return; }

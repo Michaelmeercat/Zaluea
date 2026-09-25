@@ -30,6 +30,10 @@
     s = Math.max(1, Math.min(3, Math.round(s * 4) / 4));
     if (s !== Spr.S) { Spr.S = s; Spr.cache.clear(); }
   };
+  Spr.shadows = true;
+  Spr.setShadows = function (on) {
+    if (on !== Spr.shadows) { Spr.shadows = on; Spr.cache.clear(); }
+  };
   Spr.draw = function (ctx, spr, x, y, rot, scale) {
     const w = spr.size * (scale || 1);
     if (rot) {
@@ -70,8 +74,7 @@
     const maxT = Math.max(tiers[0], tiers[1], tiers[2]);
     const total = tiers[0] + tiers[1] + tiers[2];
     // shadow
-    x.fillStyle = 'rgba(0,0,0,0.35)';
-    circle(x, 2, 4, r + 2); x.fill();
+    if (Spr.shadows) { x.fillStyle = 'rgba(0,0,0,0.35)'; circle(x, 2, 4, r + 2); x.fill(); }
     // plate
     const sides = maxT >= 3 ? 8 : 6;
     ngon(x, sides, r, Math.PI / sides);
@@ -311,9 +314,7 @@
       const sk = skinOf(skin);
       const col = skin === 'default' ? def.color : sk.prism ? '#b98cff' : sh(sk.trim, 0.1);
       // soft drop shadow
-      x.save(); x.translate(2, 3); x.globalAlpha = 0.25; x.filter = 'none';
-      HEADS[type](x, tiers, '#000000');
-      x.restore();
+      if (Spr.shadows) { x.save(); x.translate(2, 3); x.globalAlpha = 0.25; HEADS[type](x, tiers, '#000000'); x.restore(); }
       HEADS[type](x, tiers, col);
     });
   };
@@ -467,7 +468,7 @@
     const key = 'en:' + type + (flash ? ':f' : '');
     const size = r * 3.2 + 8;
     return Spr.get(key, size, (x) => {
-      if (!def.boss) { x.fillStyle = 'rgba(0,0,0,0.3)'; x.beginPath(); x.ellipse(1, r * 0.75, r * 0.9, r * 0.35, 0, 0, Math.PI * 2); x.fill(); }
+      if (!def.boss && Spr.shadows) { x.fillStyle = 'rgba(0,0,0,0.3)'; x.beginPath(); x.ellipse(1, r * 0.75, r * 0.9, r * 0.35, 0, 0, Math.PI * 2); x.fill(); }
       (EN[type] || EN.frag)(x, def.color, r);
       if (flash) { x.globalCompositeOperation = 'source-atop'; x.fillStyle = 'rgba(255,255,255,0.75)'; x.fillRect(-size, -size, size * 2, size * 2); }
     });

@@ -19,7 +19,7 @@
       this.skinFor = () => 'default';
     }
 
-    setQuality(q) { this.quality = q; }
+    setQuality(q) { this.quality = q; Spr.setShadows((CS.QUALITY[q] || CS.QUALITY.high).shadows); }
     get Q() { return CS.QUALITY[this.quality] || CS.QUALITY.high; }
 
     resize(cssW, cssH, dprCap) {
@@ -57,6 +57,24 @@
       ox.scale(this.k, this.k);
       ox.lineJoin = 'round'; ox.lineCap = 'round';
       this.overlay = CS.MapArt.paintOverlay(ox, m.def, m.map) ? o : null;
+      // Placement mask: everything a tower cannot be built on
+      const pm = Spr.mk(this.cv.width, this.cv.height);
+      const px = pm.getContext('2d');
+      px.scale(this.k, this.k);
+      px.lineJoin = 'round'; px.lineCap = 'round';
+      px.strokeStyle = '#ff3355'; px.fillStyle = '#ff3355';
+      const tr = 17;
+      for (const p of m.map.paths) {
+        px.beginPath(); px.moveTo(p.pts[0][0], p.pts[0][1]);
+        for (let i = 1; i < p.pts.length; i++) px.lineTo(p.pts[i][0], p.pts[i][1]);
+        px.lineWidth = CS.PATH_W + tr * 2 - 8; px.stroke();
+      }
+      for (const b of m.def.blocked || []) {
+        if (b.r !== undefined) { px.beginPath(); px.arc(b.x, b.y, b.r + tr - 4, 0, Math.PI * 2); px.fill(); }
+        else { px.beginPath(); px.roundRect ? px.roundRect(b.x - tr + 4, b.y - tr + 4, b.w + tr * 2 - 8, b.h + tr * 2 - 8, tr) : px.rect(b.x - tr + 4, b.y - tr + 4, b.w + tr * 2 - 8, b.h + tr * 2 - 8); px.fill(); }
+      }
+      for (const c of m.map.cores) { px.beginPath(); px.arc(c.x, c.y, tr + 34, 0, Math.PI * 2); px.fill(); }
+      this.placeMask = pm;
     }
 
     toWorld(clientX, clientY) {
@@ -88,7 +106,7 @@
       this.drawTowerBases(x, t, ui);
       this.drawZombies(x);
       this.drawEnemies(x, t, ui);
-      if (this.overlay) { x.save(); x.setTransform(1, 0, 0, 1, sx * this.k, sy * this.k); x.globalAlpha = 0.9; x.drawImage(this.overlay, 0, 0); x.restore(); }
+      if (this.overlay) { x.save(); x.setTransform(1, 0, 0, 1, sx * this.k, sy * this.k); x.globalAlpha = 0.72; x.drawImage(this.overlay, 0, 0); x.restore(); }
       this.drawTowerHeads(x, t, ui);
       this.drawProjectiles(x, Q);
       this.drawFx(x, Q);
@@ -323,6 +341,15 @@
           x.globalCompositeOperation = 'source-over';
         }
         Spr.draw(x, Spr.towerBase(tw.type, tw.tiers, skin), tw.x, tw.y, 0, sc);
+        if (maxT >= 5 && !tw.offline) {
+          const col = tw.def.color;
+          x.strokeStyle = U.rgba(col, 0.55); x.lineWidth = 1.5;
+          const rr = tw.def.r + 7;
+          for (let i = 0; i < 3; i++) { const a0 = t * 1.4 + i * 2.094 + tw.id; x.beginPath(); x.arc(tw.x, tw.y, rr, a0, a0 + 0.9); x.stroke(); }
+        } else if (maxT === 4 && !tw.offline && Q.decor) {
+          x.strokeStyle = U.rgba(tw.def.color, 0.3); x.lineWidth = 1;
+          x.beginPath(); x.arc(tw.x, tw.y, tw.def.r + 5, t * 0.8 + tw.id, t * 0.8 + tw.id + 1.6); x.stroke();
+        }
         // animated bits for static towers
         if (!tw.offline) {
           if (tw.type === 'arc' && Q.glow) {
@@ -365,8 +392,10 @@
           const skin = this.skinFor(tw.type);
           const spr = Spr.towerHead(tw.type, tw.tiers, skin);
           const back = tw.recoil * 3;
-          const sc = tw.placeT < 0.25 ? 0.7 + 0.3 * (tw.placeT / 0.25) : 1;
-          Spr.draw(x, spr, tw.x - Math.cos(tw.angle) * back, tw.y - Math.sin(tw.angle) * back, tw.angle, sc);
+          const maxT = Math.max(tw.tiers[0], tw.tiers[1], tw.tiers[2]);
+          let sc = (tw.placeT < 0.25 ? 0.7 + 0.3 * (tw.placeT / 0.25) : 1) * (1 + Math.max(0, maxT - 2) * 0.06);
+          if (tw.offline) sc *= 0.94;
+          Spr.draw(x, spr, tw.x - Math.cos(tw.angle) * back, tw.y - Math.sin(tw.angle) * back, tw.angle + (tw.offline ? Math.sin(t * 20 + tw.id) * 0.05 : 0), sc);
           if (tw.type === 'pulse' && tw.tiers[1] >= 5 && !tw.offline) {
             x.strokeStyle = 'rgba(143,240,255,0.6)'; x.lineWidth = 1.5;
             x.beginPath(); x.arc(tw.x + Math.cos(tw.angle) * 10, tw.y + Math.sin(tw.angle) * 10, 5, t * 20, t * 20 + 3); x.stroke();
@@ -669,6 +698,14 @@
       }
       if (!ui.placing) return;
       const def = CS.TOWERS[ui.placing];
+      // show no-build zones
+      if (this.placeMask) {
+        x.save(); x.setTransform(1, 0, 0, 1, 0, 0); x.globalAlpha = 0.16 + 0.04 * Math.sin(t * 4); x.drawImage(this.placeMask, 0, 0); x.restore();
+        x.fillStyle = 'rgba(255,51,85,0.16)';
+        for (const tw of this.match.towers) { x.beginPath(); x.arc(tw.x, tw.y, tw.def.r + def.r - 2, 0, TAU); x.fill(); }
+        const m = this.match;
+        if (m.corrupt && m.corrupt.active >= 0) { const z = m.def.corruption[m.corrupt.active]; x.beginPath(); x.arc(z.x, z.y, z.r, 0, TAU); x.fill(); }
+      }
       const s = CS.buildStats(ui.placing, [0, 0, 0]);
       const ok = ui.placeValid;
       const r = s.range * (1 + this.match.research.rangePct);

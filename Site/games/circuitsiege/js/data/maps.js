@@ -63,7 +63,7 @@
       blocked: [],
     },
     {
-      id: 'processor', name: 'Central Processor', diff: 'Expert', stars: 5, unlockLevel: 11, theme: 'processor', chips: 110,
+      id: 'processor', name: 'Central Processor', diff: 'Expert', stars: 5, unlockLevel: 11, theme: 'processor', chips: 110, cashBonus: 200,
       desc: 'Four data buses converge on the central Core. Every quadrant needs a defense.',
       paths: [
         [[-40, 50], [500, 50], [500, 140], [100, 140], [100, 250], [420, 250], [420, 360], [640, 360]],

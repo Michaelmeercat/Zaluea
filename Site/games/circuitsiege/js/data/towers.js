@@ -35,17 +35,17 @@
     paths: [
       { name: 'DAMAGE', ups: [
         { n: 'Reinforced Shots', c: 110, d: '+2 damage and shots pierce 1 extra enemy.', f: (s) => { s.dmg += 2; s.pierce += 1; } },
-        { n: 'Armor Piercing', c: 240, d: 'Ignores 4 armor. +2 damage.', f: (s) => { s.armorPen += 4; s.dmg += 2; } },
-        { n: 'Heavy Rounds', c: 650, d: '+6 damage, bigger rounds knock enemies back.', f: (s) => { s.dmg += 6; s.knock += 5; s.projSize = 5; } },
-        { n: 'Plasma Ammunition', c: 1900, d: 'Plasma rounds: +12 damage, +2 pierce and ignite targets.', f: (s) => { s.dmg += 12; s.pierce += 2; s.burn = Math.max(s.burn, 10); s.burnDur = 2; s.projColor = '#ff7bf2'; } },
+        { n: 'Armor Piercing', c: 240, d: 'Ignores 4 armor. +3 damage.', f: (s) => { s.armorPen += 4; s.dmg += 3; } },
+        { n: 'Heavy Rounds', c: 650, d: '+8 damage, bigger rounds knock enemies back.', f: (s) => { s.dmg += 8; s.knock += 5; s.projSize = 5; } },
+        { n: 'Plasma Ammunition', c: 1900, d: 'Plasma rounds: +20 damage, +2 pierce and ignite targets.', f: (s) => { s.dmg += 20; s.pierce += 2; s.burn = Math.max(s.burn, 15); s.burnDur = 2; s.projColor = '#ff7bf2'; } },
         { n: 'Core Destroyer', c: 6800, d: 'x3 damage, x2.5 vs bosses, rounds detonate on impact.', f: (s) => { s.dmg *= 3; s.bossMult *= 2.5; s.splash = Math.max(s.splash, 34); s.projSize = 7; } },
       ] },
       { name: 'SPEED', ups: [
         { n: 'Faster Motors', c: 100, d: '+25% attack speed.', f: (s) => { s.rate *= 1.25; } },
         { n: 'Improved Cooling', c: 260, d: '+30% attack speed.', f: (s) => { s.rate *= 1.3; } },
-        { n: 'Rapid Fire', c: 720, d: 'Twin barrels: fires 2 shots per volley.', f: (s) => { s.count = Math.max(s.count, 2); s.spread = 0.12; } },
-        { n: 'Overclock', c: 2300, d: '+80% attack speed, +40% projectile speed.', f: (s) => { s.rate *= 1.8; s.projSpeed *= 1.4; } },
-        { n: 'Bullet Storm', c: 7200, d: 'Quad rotary barrels: 4 shots per volley, +50% attack speed.', f: (s) => { s.count = 4; s.spread = 0.16; s.rate *= 1.5; } },
+        { n: 'Rapid Fire', c: 720, d: 'Twin barrels: fires 2 shots per volley, +1 damage.', f: (s) => { s.count = Math.max(s.count, 2); s.spread = 0.12; s.dmg += 1; } },
+        { n: 'Overclock', c: 2300, d: 'x2 attack speed, +2 damage, +40% projectile speed.', f: (s) => { s.rate *= 2; s.dmg += 2; s.projSpeed *= 1.4; } },
+        { n: 'Bullet Storm', c: 7200, d: 'Quad rotary barrels: 4 shots per volley, +60% attack speed, +3 damage.', f: (s) => { s.count = 4; s.spread = 0.16; s.rate *= 1.6; s.dmg += 3; } },
       ] },
       { name: 'UTILITY', ups: [
         { n: 'Better Targeting', c: 90, d: '+15% range, +20% projectile speed.', f: (s) => { s.range *= 1.15; s.projSpeed *= 1.2; } },
@@ -68,8 +68,8 @@
       { name: 'CALIBER', ups: [
         { n: 'Heavy Caliber', c: 260, d: '+22 damage.', f: (s) => { s.dmg += 22; } },
         { n: 'Deadeye', c: 620, d: '+15 damage and ignores 6 more armor.', f: (s) => { s.dmg += 15; s.armorPen += 6; } },
-        { n: 'Shatter Rounds', c: 1600, d: '+30 damage. Every hit permanently strips 2 armor.', f: (s) => { s.dmg += 30; s.shred += 2; } },
-        { n: 'Execution Protocol', c: 4200, d: '+90 damage. Instantly deletes non-boss enemies under 20% HP.', f: (s) => { s.dmg += 90; s.execute = Math.max(s.execute, 0.2); } },
+        { n: 'Shatter Rounds', c: 1600, d: '+40 damage. Every hit permanently strips 2 armor.', f: (s) => { s.dmg += 40; s.shred += 2; } },
+        { n: 'Execution Protocol', c: 4200, d: '+130 damage. Instantly deletes non-boss enemies under 20% HP.', f: (s) => { s.dmg += 130; s.execute = Math.max(s.execute, 0.2); } },
         { n: 'Singularity Bolt', c: 11500, d: 'x3 damage, x3 vs bosses. Unlocks MARK FOR DELETION.', f: (s) => { s.dmg *= 3; s.bossMult *= 3; s.ability = 'mark'; } },
       ] },
       { name: 'RELOAD', ups: [
@@ -191,7 +191,7 @@
     role: 'Roaming hunters', tags: ['Mobile', 'Anti-fast', 'Coverage'],
     desc: 'Launches autonomous drones that hunt enemies anywhere within their leash. Great coverage for long paths.',
     kind: 'drones', targeting: ['first', 'last', 'strong', 'close', 'fast'],
-    base: { range: 210, drones: 2, droneDmg: 4, droneRate: 2.4, droneSpeed: 230, type: 'phys', dmg: 4, rate: 2.4 },
+    base: { range: 210, drones: 2, droneDmg: 5, droneRate: 2.4, droneSpeed: 230, type: 'phys', dmg: 5, rate: 2.4 },
     paths: [
       { name: 'PAYLOAD', ups: [
         { n: 'Hardened Drones', c: 260, d: '+3 drone damage.', f: (s) => { s.droneDmg += 3; } },
@@ -203,9 +203,9 @@
       { name: 'SWARM', ups: [
         { n: 'Extra Drone', c: 320, d: '+1 drone.', f: (s) => { s.drones += 1; } },
         { n: 'Swarm Logic', c: 740, d: '+1 drone, +30% drone speed.', f: (s) => { s.drones += 1; s.droneSpeed *= 1.3; } },
-        { n: 'Hive Mind', c: 1550, d: '+2 drones. Drones deal +15% damage.', f: (s) => { s.drones += 2; s.droneDmg *= 1.15; } },
-        { n: 'Replicator', c: 3900, d: '+3 drones, +20% fire rate.', f: (s) => { s.drones += 3; s.droneRate *= 1.2; } },
-        { n: 'Swarm Protocol', c: 9300, d: '+4 drones. Unlocks SWARM STRIKE.', f: (s) => { s.drones += 4; s.ability = 'swarm'; } },
+        { n: 'Hive Mind', c: 1550, d: '+2 drones. Drones deal +30% damage.', f: (s) => { s.drones += 2; s.droneDmg *= 1.3; } },
+        { n: 'Replicator', c: 3900, d: '+3 drones, +30% fire rate, +3 drone damage.', f: (s) => { s.drones += 3; s.droneRate *= 1.3; s.droneDmg += 3; } },
+        { n: 'Swarm Protocol', c: 9300, d: '+4 drones, x1.5 drone damage. Unlocks SWARM STRIKE.', f: (s) => { s.drones += 4; s.droneDmg *= 1.5; s.ability = 'swarm'; } },
       ] },
       { name: 'SENSORS', ups: [
         { n: 'Long Leash', c: 210, d: '+30% hunting range.', f: (s) => { s.range *= 1.3; } },
@@ -223,14 +223,14 @@
     role: 'Economy', tags: ['Income', 'Support', 'Risky early'],
     desc: 'Mines data during waves and converts it into Credits. Investing early pays off later — if you survive.',
     kind: 'farm', targeting: [],
-    base: { range: 110, income: 75 },
+    base: { range: 110, income: 90 },
     paths: [
       { name: 'YIELD', ups: [
-        { n: 'Denser Storage', c: 420, d: '+45 Credits per wave.', f: (s) => { s.income += 45; } },
-        { n: 'Compression', c: 950, d: '+70 Credits per wave.', f: (s) => { s.income += 70; } },
-        { n: 'Server Cluster', c: 2500, d: '+170 Credits per wave.', f: (s) => { s.income += 170; } },
-        { n: 'Data Center', c: 6200, d: '+450 Credits per wave.', f: (s) => { s.income += 450; } },
-        { n: 'Mega Cloud', c: 15500, d: '+1300 Credits per wave.', f: (s) => { s.income += 1300; } },
+        { n: 'Denser Storage', c: 420, d: '+60 Credits per wave.', f: (s) => { s.income += 60; } },
+        { n: 'Compression', c: 950, d: '+100 Credits per wave.', f: (s) => { s.income += 100; } },
+        { n: 'Server Cluster', c: 2500, d: '+240 Credits per wave.', f: (s) => { s.income += 240; } },
+        { n: 'Data Center', c: 6200, d: '+650 Credits per wave.', f: (s) => { s.income += 650; } },
+        { n: 'Mega Cloud', c: 15500, d: '+1900 Credits per wave.', f: (s) => { s.income += 1900; } },
       ] },
       { name: 'INTEREST', ups: [
         { n: 'Savings Protocol', c: 520, d: 'Earn 2% interest on banked Credits each wave (max 150).', f: (s) => { s.interest = 0.02; s.interestCap = 150; } },
@@ -447,6 +447,24 @@
     for (const t of next) if (t > CS.UPGRADE_RULES.secondaryCap) above++;
     if (above > 1) return { ok: false, why: 'Only one path above tier 2' };
     return { ok: true };
+  };
+
+  // Where (if anywhere) a tower gains stealth detection or reveal
+  CS.detectInfo = function (towerId) {
+    const def = CS.TOWERS[towerId];
+    const s0 = CS.buildStats(towerId, [0, 0, 0]);
+    if (s0.detect) return 'Built-in';
+    for (let p = 0; p < 3; p++) {
+      for (let i = 1; i <= 5; i++) {
+        const tiers = [0, 0, 0]; tiers[p] = i;
+        const s = CS.buildStats(towerId, tiers);
+        if (s.detect) return def.paths[p].name + ' T' + i;
+        if (s.auraReveal) return def.paths[p].name + ' T' + i + ' (reveals in field)';
+        if (s.buffDetect) return def.paths[p].name + ' T' + i + ' (grants to nearby)';
+        if (s.eliteSpotter) return def.paths[p].name + ' T' + i;
+      }
+    }
+    return 'None';
   };
 
   CS.buildStats = function (towerId, tiers) {

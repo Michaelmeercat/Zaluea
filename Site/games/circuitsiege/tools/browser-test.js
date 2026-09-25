@@ -23,7 +23,7 @@ const URL = 'file://' + path.join(__dirname, '..', 'index.html');
   // visit every menu page
   for (const p of ['play', 'towers', 'research', 'challenges', 'achievements', 'profile', 'settings']) {
     await page.evaluate((p) => CS.app.menus.show(p), p);
-    await page.waitForTimeout(150);
+    await page.waitForTimeout(500);
     await shot('03-menu-' + p);
   }
   await page.evaluate(() => CS.app.menus.show('play'));
@@ -53,6 +53,15 @@ const URL = 'file://' + path.join(__dirname, '..', 'index.html');
   console.log('placed', res);
   await page.waitForTimeout(2500);
   await shot('07-game-wave1');
+  // hover shop + placing overlay
+  await page.hover('.shop-item[data-type=arc]');
+  await page.waitForTimeout(200);
+  await shot('07b-tooltip');
+  await page.keyboard.press('3');
+  await page.mouse.move(500, 300);
+  await page.waitForTimeout(200);
+  await shot('07c-placing');
+  await page.keyboard.press('Escape');
   // select a tower to show inspector
   await page.evaluate(() => { const h = CS.app.hud; h.select(CS.app.match.towers[0]); });
   await page.waitForTimeout(300);

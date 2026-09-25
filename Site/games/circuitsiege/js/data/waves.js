@@ -11,9 +11,9 @@
       desc: '40 waves. More Credits. Designed for learning.' },
     standard: { id: 'standard', name: 'Standard', waves: 60, hp: 1, speed: 1, cash: 650, core: 150, cost: 1, reward: 1, boss: 1, elite: 1, xp: 1.5, chips: 1.6, color: '#39d0ff',
       desc: '60 waves. The intended experience.' },
-    advanced: { id: 'advanced', name: 'Advanced', waves: 80, hp: 1.2, speed: 1.05, cash: 550, core: 100, cost: 1.08, reward: 0.95, boss: 1.25, elite: 1.5, xp: 2.2, chips: 2.5, color: '#ffb547', unlockLevel: 5,
+    advanced: { id: 'advanced', name: 'Advanced', waves: 80, hp: 1.12, speed: 1.03, cash: 600, core: 100, cost: 1.08, reward: 1, boss: 1.12, elite: 1.5, xp: 2.2, chips: 2.5, color: '#ffb547', unlockLevel: 5,
       desc: '80 waves. Stronger enemies, less money.' },
-    nightmare: { id: 'nightmare', name: 'Nightmare', waves: 100, hp: 1.45, speed: 1.1, cash: 500, core: 50, cost: 1.2, reward: 0.9, boss: 1.6, elite: 2.2, xp: 3.2, chips: 4, color: '#ff4d6d', unlockLevel: 12,
+    nightmare: { id: 'nightmare', name: 'Nightmare', waves: 100, hp: 1.3, speed: 1.06, cash: 550, core: 50, cost: 1.15, reward: 0.95, boss: 1.3, elite: 2, xp: 3.2, chips: 4, color: '#ff4d6d', unlockLevel: 12,
       desc: '100 waves. Elite modifiers everywhere. Bosses are brutal.' },
   };
   CS.DIFF_ORDER = ['casual', 'standard', 'advanced', 'nightmare'];

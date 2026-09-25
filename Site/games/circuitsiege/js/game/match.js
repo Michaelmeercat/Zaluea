@@ -32,7 +32,7 @@
       this.listener = null;
 
       const cashMult = 1 + this.research.cashPct + (this.rules.cashPct || 0);
-      this.credits = Math.round((this.rules.cash || this.diff.cash) * cashMult);
+      this.credits = Math.round(((this.rules.cash || this.diff.cash) + (this.def.cashBonus || 0)) * cashMult);
       if (this.tutorial) this.credits = 400;
       this.coreMax = this.diff.core + this.research.coreHp;
       if (this.modes.onelife) this.coreMax = 1;
@@ -254,7 +254,7 @@
       if (!this.canStartWave()) return false;
       this.wave++;
       const w = this.wave;
-      let groups = this.tutorial ? CS.getTutorialWave(w) : CS.getWave(w, this.seed, this.endless || w > 100);
+      let groups = this.tutorial && w < CS.TUTORIAL_WAVES.length ? CS.getTutorialWave(w) : CS.getWave(w, this.seed, this.endless || w > 100);
       if (this.modes.double) {
         const extra = [];
         for (const g of groups) if (E[g.type].boss) extra.push({ type: g.type, count: g.count, gap: g.gap, start: g.start + 9 });
@@ -330,11 +330,12 @@
       const def = E[type];
       let e = this.enemyPool.pop() || newEnemy();
       const path = this.map.paths[pathIdx];
-      const hs = CS.hpScale(wave) * this.diff.hp * (def.boss ? this.diff.boss : 1) * (this.tutorial ? 0.8 : 1);
+      const dRamp = 1 + (this.diff.hp - 1) * Math.min(1, wave / 30);
+      const hs = CS.hpScale(wave) * dRamp * (def.boss ? 1 + (this.diff.boss - 1) * Math.min(1, wave / 40) : 1) * (this.tutorial ? 0.8 : 1);
       e.id = NEXT_ID++; e.def = def; e.type = type; e.path = path; e.pathIdx = pathIdx; e.dist = dist;
       e.x = path.xs[0]; e.y = path.ys[0]; e.ang = 0; e.r = def.r; e.alive = true; e.wave = wave; e.boss = !!def.boss;
       e.maxHp = e.hp = Math.round(def.hp * hs);
-      e.armor = (def.armor || 0) + (wave > 40 && def.armor ? Math.floor((wave - 40) / 15) : 0);
+      e.armor = (def.armor || 0) + (wave > 40 && def.armor ? Math.floor((wave - 40) / 15) : 0) + (def.boss && def.armor ? Math.max(0, Math.floor((wave - 20) / 10)) : 0);
       e.shieldMax = e.shield = def.shield ? Math.round(def.shield * hs) : 0;
       e.shieldHitT = 5;
       let spd = def.speed * this.diff.speed * CS.speedScale(wave);
@@ -378,7 +379,7 @@
         for (let i = 0; i < n; i++) {
           const s = this.spawnEnemy('wormseg', e.pathIdx, e.dist - (i + 1) * 30, e.wave, { noElite: true, count: true });
           s.leader = e; s.segIdx = i + 1;
-          s.maxHp = s.hp = Math.round(E.wormseg.hp * CS.hpScale(e.wave) * this.diff.hp * this.diff.boss);
+          s.maxHp = s.hp = Math.round(E.wormseg.hp * CS.hpScale(e.wave) * (1 + (this.diff.hp - 1) * Math.min(1, e.wave / 30)) * (1 + (this.diff.boss - 1) * Math.min(1, e.wave / 40)));
           e.segs.push(s);
         }
         e.segAlive = n;
@@ -460,7 +461,7 @@
         let ar = e.armor - e.shred - e.shredAura - (e.virusT > 0 && e.virusSrc ? e.virusSrc.s.virusShred : 0);
         if (type === 'explosive') ar *= 0.5;
         ar -= (opts && opts.pen !== undefined ? opts.pen : s ? s.armorPen : 0);
-        if (ar > 0) amt = Math.max(amt * 0.2, amt - ar);
+        if (ar > 0) amt = Math.max(amt * 0.3, amt - ar);
       }
       if (amt <= 0) return 0;
       const dealt = Math.min(amt, e.hp);
@@ -553,7 +554,8 @@
         }
         mult *= 1 + bounty + gb;
         const endlessDecay = this.wave > 60 ? Math.max(0.35, 1 - (this.wave - 60) * 0.012) : 1;
-        this.addCredits(def.reward * mult * endlessDecay);
+        const waveScale = 1 + 0.015 * (Math.min(e.wave, 60) - 1);
+        this.addCredits(def.reward * mult * endlessDecay * waveScale);
       }
       if (e.cacheValue) {
         this.addCredits(e.cacheValue);
@@ -625,6 +627,7 @@
       else {
         let dmg = e.def.leak;
         if (this.tutorial && e.boss) dmg = 60;
+        if (e.type === 'root' && e.wave < this.maxWave) dmg = 80;
         if (this.modes.onelife) dmg = 9999;
         if (dmg > 0) {
           this.coreHp -= dmg;
@@ -1335,10 +1338,10 @@
           for (const t of this.towers) if (U.dist2(t.x, t.y, e.x, e.y) < R * R) { t.disabledT = Math.max(t.disabledT, 2.5); this.fx.spark(t.x, t.y, '#5aa0ff', 6, 80, 0.5, 2); }
         }
       } else if (e.type === 'worm') {
-        e.armor = 4 + 2 * Math.max(0, e.segAlive);
+        e.armor = 2 + Math.max(0, e.segAlive) + Math.max(0, Math.floor((e.wave - 20) / 10));
         e.abT2 -= dt;
         if (e.abT2 <= 0 && e.dist > 60) {
-          e.abT2 = 6;
+          e.abT2 = 7;
           const n = Math.ceil(Math.max(0, e.segAlive) / 2);
           for (let i = 0; i < n; i++) this.spawnEnemy('zip', e.pathIdx, Math.max(0, e.dist - 30 - i * 14), w, { noElite: true });
           if (n) this.fx.ring(e.x, e.y, 4, 50, '#9dff5a', 0.4, 2);
@@ -1352,12 +1355,12 @@
       } else if (e.type === 'blackout') {
         e.abT2 -= dt;
         if (e.abT2 <= 0) {
-          e.abT2 = 11;
+          e.abT2 = 13;
           const picks = this.towers.length ? this.towers : [{ x: 640, y: 360 }];
           const n = Math.min(3, 1 + Math.floor(this.towers.length / 6));
           for (let i = 0; i < n; i++) {
             const t = U.pick(picks);
-            this.zones.push({ kind: 'dark', x: t.x + (Math.random() - 0.5) * 60, y: t.y + (Math.random() - 0.5) * 60, r: 135, t: 0, dur: 6.5 });
+            this.zones.push({ kind: 'dark', x: t.x + (Math.random() - 0.5) * 60, y: t.y + (Math.random() - 0.5) * 60, r: 125, t: 0, dur: 6 });
           }
           sfx('blackout');
           this.emit('toast', 'BLACKOUT: sectors offline!');

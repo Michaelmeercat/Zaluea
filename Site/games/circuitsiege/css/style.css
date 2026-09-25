@@ -458,3 +458,16 @@ kbd { background: #1c2738; border: 1px solid var(--line2); border-bottom-width: 
 ::-webkit-scrollbar { width: 8px; height: 8px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: #26364f; border-radius: 4px; }
+
+/* Shop tooltip & build strip */
+#shop-tip { position: fixed; z-index: 40; width: 250px; display: none; pointer-events: none; background: linear-gradient(180deg, rgba(20,30,46,0.98), rgba(10,15,24,0.98)); border: 1px solid var(--line2); border-left: 3px solid var(--cyan); padding: 9px 12px; font-size: 13px; clip-path: var(--cut-s); }
+#shop-tip .st-n { font-weight: 800; font-size: 16px; display: flex; justify-content: space-between; }
+#shop-tip .st-n span { color: var(--gold); }
+#shop-tip .st-r { color: var(--cyan2); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; }
+#shop-tip .st-d { color: var(--muted); margin: 4px 0 6px; line-height: 1.25; }
+#shop-tip .st-row { display: flex; justify-content: space-between; border-top: 1px solid rgba(255,255,255,0.05); padding: 2px 0; }
+#shop-tip .st-row span { color: var(--muted); }
+.build-strip { display: flex; gap: 3px; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid var(--line); }
+.build-strip button { flex: 1; background: var(--panel2); border: 1px solid var(--line); padding: 2px; min-width: 0; }
+.build-strip button:hover { border-color: var(--cyan); }
+.build-strip img { width: 100%; max-width: 30px; display: block; margin: 0 auto; }

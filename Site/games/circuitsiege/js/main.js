@@ -301,6 +301,8 @@
           nowM[type] = x;
           const delta = x - (prevM[type] || 0);
           if (delta <= 0) continue;
+          out.masteryXP = out.masteryXP || {};
+          out.masteryXP[type] = Math.round(delta);
           const ups = S.addMasteryXP(type, delta);
           st.towerUse[type] = (st.towerUse[type] || 0) + 0;
           if (ups.length) out.mastery.push({ type, lvl: ups[ups.length - 1] });
@@ -348,6 +350,7 @@
         <div class="reward-row"><div class="reward"><div class="rv" style="color:var(--cyan2)">+${U.fmt(res.xp)}</div><div class="rl">XP</div></div><div class="reward"><div class="rv dc">${U.fmt(res.chips + (res.levelChips || 0))}</div><div class="rl">DATA CHIPS</div></div><div class="reward"><div class="rv">${S.data.level}</div><div class="rl">LEVEL</div></div></div>
         <div class="xpbar"><div style="width:${((S.data.xp / P.xpToNext(S.data.level)) * 100).toFixed(1)}%"></div></div>
         <div class="unlock-list">${unl.join('')}</div>
+        ${res.masteryXP ? '<div class="sec-label">TOWER MASTERY</div><div class="tags">' + Object.keys(res.masteryXP).map((ty) => `<span class="chip cyan">${CS.TOWERS[ty].name} +${U.fmt(res.masteryXP[ty])} XP · M${S.mastery(ty).lvl}</span>`).join('') + '</div>' : ''}
         <div class="sec-label">MATCH STATS</div>
         <div class="mini-stats"><div>Enemies <b>${U.fmt(m.stats.kills)}</b></div><div>Damage <b>${U.fmt(m.stats.damage)}</b></div><div>Credits earned <b>${U.fmt(m.stats.creditsEarned)}</b></div><div>Core lost <b>${U.fmt(m.stats.coreLost)}</b></div><div>Bosses <b>${m.stats.bosses}</b></div><div>Towers built <b>${m.stats.towersPlaced}</b></div></div>
         ${perf ? '<div class="sec-label">TOP TOWERS</div><div class="tower-perf">' + perf + '</div>' : ''}
