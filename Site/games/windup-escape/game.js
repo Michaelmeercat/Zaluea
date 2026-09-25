@@ -96,7 +96,7 @@
     time: 0, windT: 0, endT: 0, cause: null,
     fails: 0, taps: 0, springMax: 1,
     demo: null, lastTeleport: false, resultShown: false,
-    bonked: false
+    bonked: false, win: null
   };
   var vis = { ang: 0, walk: 0, keySpin: 0, corrX: 0, corrY: 0, blink: 0, blinkT: 2, shake: 0 };
   var view = { w: 1, h: 1, dpr: 1, T: 40, ox: 0, oy: 0, d: 10, strips: [] };
@@ -615,6 +615,24 @@
     buzz([20, 60, 30]);
     var e = tileXY(G.cur.res.ev.to);
     confetti(e.x + 0.5, e.y + 0.5, isQuiet() ? 20 : 60);
+    if (!G.demo) recordWin();
+  }
+
+  // Save the moment the toy escapes, so closing the game right away keeps the stars.
+  function recordWin() {
+    var L = G.L, s = G.s;
+    var got = Sim.popcount(s.keys), time = s.b * BEAT;
+    var stars = [true, got === L.keys.length, s.b <= G.def.par];
+    var n = stars.filter(Boolean).length;
+    var prevStars = save.stars[G.li] || 0, prevBest = save.best[G.li];
+    var before = totalStars();
+    save.stars[G.li] = Math.max(prevStars, n);
+    if (!(prevBest <= time)) save.best[G.li] = time;
+    writeSave();
+    G.win = {
+      stars: stars, n: n, prevStars: prevStars, time: time,
+      unlocked: C.skins.filter(function (sk) { return sk.stars > before && sk.stars <= totalStars(); })
+    };
   }
 
   function die(cause) {
@@ -640,7 +658,7 @@
     var L = G.L, def = G.def, s = G.s;
     var nk = L.keys.length, got = Sim.popcount(s.keys);
     var time = s.b * BEAT;
-    var stars = [true, got === nk, s.b <= def.par];
+    var stars = won ? G.win.stars : [false, got === nk, false];
     Sound.duck(true);
     hide(ui.hint);
     var starEls = ui.resultStars.children;
@@ -648,13 +666,7 @@
     ui.resultGoals.innerHTML = '';
     hide(ui.show);
     if (won) {
-      var n = stars.filter(Boolean).length;
-      var prevStars = save.stars[G.li] || 0;
-      var before = totalStars();
-      save.stars[G.li] = Math.max(prevStars, n);
-      var unlocked = C.skins.filter(function (sk) { return sk.stars > before && sk.stars <= totalStars(); });
-      if (!(save.best[G.li] <= time)) save.best[G.li] = time;
-      writeSave();
+      var n = G.win.n, prevStars = G.win.prevStars, unlocked = G.win.unlocked;
       G.fails = 0;
       var last = G.li === LEVELS.length - 1;
       ui.resultTitle.textContent = last ? 'You escaped the toy box!' : n === 3 ? 'Perfect escape!' : 'Escaped!';
