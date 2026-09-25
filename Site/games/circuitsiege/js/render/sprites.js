@@ -260,7 +260,10 @@
     const lights = 6 + B;
     for (let i = 0; i < lights; i++) { const a = (i / lights) * Math.PI * 2; circle(x, Math.cos(a) * 10, Math.sin(a) * 10, 1); x.fillStyle = i % 2 ? '#d7ff8a' : '#ffb547'; x.fill(); }
     if (A >= 4) { rrect(x, -18, -4, 5, 8, 1); fillStroke(x, '#4a5a2a', OUT, 1); rrect(x, 13, -4, 5, 8, 1); fillStroke(x, '#4a5a2a', OUT, 1); }
+    if (A >= 5) { for (const sx of [-15.5, 15.5]) { circle(x, sx, 0, 2); x.fillStyle = '#ffd84d'; x.fill(); } }
+    if (B >= 3) { for (let i = 0; i < 4; i++) { const a = Math.PI / 4 + (i * Math.PI) / 2; circle(x, Math.cos(a) * 15, Math.sin(a) * 15, 3.4); fillStroke(x, B >= 5 ? '#b7ff5a' : '#2d3a22', OUT, 1); } }
     if (C >= 3) { circle(x, 12, -12, 4); fillStroke(x, '#3a4455', OUT, 1); circle(x, 12, -12, 1.8); x.fillStyle = '#b7ff5a'; x.fill(); }
+    if (C >= 5) { x.strokeStyle = '#b7ff5a'; x.lineWidth = 1.2; x.beginPath(); x.arc(0, 0, 16, -2.4, -0.7); x.stroke(); x.beginPath(); x.arc(0, 0, 16, 0.7, 2.4); x.stroke(); }
   };
   BASES.farm = function (x, t, c) {
     const [A, B, C] = t;
@@ -273,7 +276,9 @@
       for (let j = 0; j < 5; j++) { x.fillStyle = (i + j) % 3 === 0 ? '#ffd84d' : '#6dffb0'; x.fillRect(px + 1.5, -9 + j * 4, 2, 1.4); }
     }
     if (B >= 1) { circle(x, 0, 14, 4.2); fillStroke(x, '#ffd84d', OUT, 1.2); x.fillStyle = OUT; x.font = 'bold 6px sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText('¢', 0, 14.3); }
+    if (B >= 3) { rrect(x, -18, 6, 9, 9, 1.5); fillStroke(x, lin(x, 0, 6, 0, 15, '#ffe58a', '#b8860b'), OUT, 1.1); x.fillStyle = OUT; x.fillRect(-14.5, 9, 2, 3); }
     if (C >= 1) { rrect(x, 11, -15, 7, 5, 1); fillStroke(x, '#5a4a2a', OUT, 1); }
+    if (C >= 3) { rrect(x, 11, 8, 8, 7, 1); fillStroke(x, '#7a5a2a', OUT, 1); rrect(x, 13, 5, 8, 6, 1); fillStroke(x, '#8a6a3a', OUT, 1); }
     if (A >= 5) { circle(x, 0, -15, 5); fillStroke(x, '#e8f8ff', OUT, 1); }
   };
   BASES.amp = function (x, t, c) {
@@ -281,6 +286,9 @@
     circle(x, 0, 0, 11); fillStroke(x, lin(x, 0, -11, 0, 11, '#4a2a44', '#1f1220'), OUT, 1.5);
     for (let i = 0; i < 3; i++) { const a = (i / 3) * Math.PI * 2 - Math.PI / 2; rrect(x, Math.cos(a) * 8 - 2.5, Math.sin(a) * 8 - 2.5, 5, 5, 1); fillStroke(x, A >= B ? '#ff6a5a' : '#ffd84d', OUT, 1); }
     circle(x, 0, 0, 5 + Math.max(A, B, C) * 0.4); x.fillStyle = rad(x, 7, '#ffffff', c); x.fill(); x.strokeStyle = OUT; x.lineWidth = 1; x.stroke();
+    if (A >= 3) for (let i = 0; i < 3; i++) { const a = (i / 3) * Math.PI * 2 + Math.PI / 6; poly(x, [Math.cos(a) * 11, Math.sin(a) * 11, Math.cos(a + 0.25) * 17, Math.sin(a + 0.25) * 17, Math.cos(a - 0.25) * 17, Math.sin(a - 0.25) * 17]); fillStroke(x, '#ff6a5a', OUT, 1); }
+    if (B >= 3) { circle(x, 0, 0, 13); x.strokeStyle = '#ffd84d'; x.lineWidth = 1.4; x.stroke(); }
+    if (C >= 3) { x.strokeStyle = '#5ad7ff'; x.lineWidth = 1.6; x.beginPath(); x.moveTo(0, -11); x.lineTo(0, -19); x.stroke(); circle(x, 0, -19, 2); x.fillStyle = '#5ad7ff'; x.fill(); }
     if (C >= 5) { circle(x, 0, 0, 15); x.strokeStyle = '#ffd84d'; x.lineWidth = 1.2; x.stroke(); }
   };
   BASES.gravity = function (x, t, c) {
@@ -289,6 +297,9 @@
     const cr = 6 + A * 0.5;
     circle(x, 0, 0, cr); x.fillStyle = '#05030a'; x.fill();
     x.strokeStyle = '#c77dff'; x.lineWidth = 1.4; circle(x, 0, 0, cr + 1); x.stroke();
+    if (A >= 3) { circle(x, 0, 0, cr * 0.45); x.fillStyle = '#c77dff'; x.fill(); }
+    if (B >= 3) { x.strokeStyle = '#e7c2ff'; x.lineWidth = 1; x.beginPath(); x.ellipse(0, 0, 16, 6, 0.5, 0, Math.PI * 2); x.stroke(); x.beginPath(); x.ellipse(0, 0, 16, 6, -0.5, 0, Math.PI * 2); x.stroke(); }
+    if (C >= 3) for (let i = 0; i < 6; i++) { const a = (i / 6) * Math.PI * 2; poly(x, [Math.cos(a) * 17, Math.sin(a) * 17, Math.cos(a + 0.18) * 12.5, Math.sin(a + 0.18) * 12.5, Math.cos(a - 0.18) * 12.5, Math.sin(a - 0.18) * 12.5]); fillStroke(x, '#8a5cff', OUT, 0.8); }
     if (C >= 5 || A >= 5) { circle(x, 0, 0, cr + 4); x.strokeStyle = '#ffd84d'; x.lineWidth = 1; x.stroke(); }
   };
 
