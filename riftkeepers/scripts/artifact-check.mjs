@@ -1,0 +1,20 @@
+import { chromium } from 'playwright';
+const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome' });
+const page = await browser.newPage({ viewport: { width: 1280, height: 720 } });
+const errs = [];
+page.on('pageerror', (e) => errs.push(e.message));
+page.on('console', (m) => { if (m.type() === 'error') errs.push(m.text()); });
+// emulate the publish skeleton
+const body = (await import('node:fs')).readFileSync('/home/user/Zaluea/riftkeepers/dist-artifact/riftkeepers.html', 'utf8');
+await page.setContent(`<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><style>:root{color-scheme:light}body{margin:0;font:14px system-ui;background:#fafafa}</style></head><body>${body}</body></html>`);
+await page.waitForSelector('[data-testid=play]', { timeout: 10000 });
+await page.waitForTimeout(800);
+await page.click('[data-testid=play]');
+await page.click('text=Skip tutorial');
+await page.click('[data-testid=map-meadow]');
+await page.click('[data-testid=start-run]');
+await page.waitForSelector('[data-testid=start-wave]');
+await page.waitForTimeout(500);
+await page.screenshot({ path: '/tmp/claude-0/shots/artifact-local.png' });
+console.log('font ok', await page.evaluate(() => document.fonts.check('600 16px Fredoka')), 'errors:', errs.join(' | ') || 'none');
+await browser.close();

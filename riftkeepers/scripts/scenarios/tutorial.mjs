@@ -1,0 +1,51 @@
+import { clickWorld, freshStart, waitWaveEnd, fast } from './lib.mjs';
+export default async function (page, ctx) {
+  await freshStart(page, ctx);
+  await page.click('[data-testid=play]');
+  await page.click('text=Start tutorial');
+  await page.waitForSelector('.tut');
+  await page.waitForTimeout(500);
+  await ctx.shot('tut1');
+  const step = async () => (await page.textContent('.tut h4')).trim();
+  ctx.log('1', await step());
+  await page.click('[data-testid=tut-next]');
+  ctx.log('2', await step());
+  await ctx.shot('tut2');
+  await page.click('[data-testid=shop-archer]');
+  ctx.log('3', await step());
+  await ctx.shot('tut3');
+  await clickWorld(page, 300, 250);
+  await page.waitForTimeout(200);
+  ctx.log('4', await step());
+  // start must be enabled now
+  await page.click('[data-testid=start-wave]', { force: true });
+  ctx.log('5', await step());
+  await fast(page, 8);
+  await waitWaveEnd(page);
+  await page.waitForTimeout(300);
+  ctx.log('6', await step());
+  await ctx.shot('tut6');
+  await page.click('[data-testid=tut-next]');
+  ctx.log('7', await step());
+  await clickWorld(page, 300, 240); // select archer
+  await page.waitForSelector('[data-testid=tower-panel]');
+  await page.waitForTimeout(450);
+  await page.click('[data-testid=up-0]');
+  await page.waitForTimeout(200);
+  ctx.log('8', await step());
+  await ctx.shot('tut8');
+  await page.click('[data-testid=shop-warden]').catch(async () => { await page.click('button[aria-label="Close panel"]'); await page.click('[data-testid=shop-warden]'); });
+  await clickWorld(page, 480, 230);
+  await page.waitForTimeout(200);
+  ctx.log('9', await step());
+  await page.click('[data-testid=tut-next]');
+  ctx.log('10', await step());
+  await ctx.shot('tut10');
+  await page.click('[data-testid=tut-next]');
+  ctx.log('11', await step());
+  await page.click('[data-testid=tut-next]');
+  await page.waitForSelector('.tut', { state: 'detached' });
+  const done = await page.evaluate(() => JSON.parse(localStorage.getItem('riftkeepers.save')).tutorialDone);
+  ctx.log('tutorialDone saved:', done);
+  await ctx.shot('tut-done');
+}

@@ -1,5 +1,6 @@
 var games = [
-    {name: "Flappy Bird", path: "games/flappybird/index.html"}
+    {name: "Flappy Bird", path: "games/flappybird/index.html"},
+    {name: "Riftkeepers", path: "games/riftkeepers/index.html"}
 ];
 
 var glist = document.getElementById("gameslist");
